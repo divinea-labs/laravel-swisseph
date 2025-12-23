@@ -28,6 +28,15 @@ This package exists to:
 - expose **stable DTO contracts** instead of raw text output
 - keep all calculations **local, private, and reproducible**
 
+## Requirements & Compatibility
+
+- PHP **8.3** or **8.4**
+- Laravel **11.x** or **12.x**
+- Swiss Ephemeris (`swetest`) installed locally
+
+This package is tested against the officially supported Laravel versions
+using Orchestra Testbench and GitHub Actions.
+
 ## Installation
 
 You can install the package via composer:
