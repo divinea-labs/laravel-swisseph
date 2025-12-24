@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.1.1 - 2025-12-24
+
+v0.1.1 — Dependency Resolution Fix (PHP 8.4)
+
+Enforced phpdocumentor/reflection >= 6.1 to prevent installation issues on PHP 8.4
+Improved dependency resolution stability in projects with existing composer.lock
+
 ## v0.1.0 - 2025-12-23
 
 Initial public release.
