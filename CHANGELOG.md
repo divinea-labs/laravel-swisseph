@@ -2,6 +2,11 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.1.2 - 2025-12-26
+
+Improved developer experience by adding method annotations to the facade, enabling better IDE autocompletion and static analysis.
+No runtime behavior changes.
+
 ## v0.1.1 - 2025-12-24
 
 v0.1.1 — Dependency Resolution Fix (PHP 8.4)
