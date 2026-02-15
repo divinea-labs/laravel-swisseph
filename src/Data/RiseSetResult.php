@@ -67,6 +67,6 @@ class RiseSetResult extends Data
             return null;
         }
 
-        return $rise->utcAt->diff($set->utcAt);
+        return $rise->utcAt->diffAsCarbonInterval($set->utcAt);
     }
 }
