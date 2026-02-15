@@ -52,7 +52,7 @@ final class RiseParser
             }
 
             $riseUtc = $this->parseUtcDateTime($tokens[1], $tokens[2]);
-            $setUtc  = $this->parseUtcDateTime($tokens[4], $tokens[5]);
+            $setUtc = $this->parseUtcDateTime($tokens[4], $tokens[5]);
 
             if ($riseUtc === null || $setUtc === null) {
                 continue;   // parseUtcDateTime never throws
@@ -76,11 +76,11 @@ final class RiseParser
             $events,
             fn (RiseSetEvent $e) => $query->isModeB()
                 ? $e->localDate === $query->localDate
-                : $e->utcDate   === $query->utcDate
+                : $e->utcDate === $query->utcDate
         ));
 
         $riseFound = false;
-        $setFound  = false;
+        $setFound = false;
         foreach ($filtered as $e) {
             if ($e->type === RiseSetEventType::RISE) {
                 $riseFound = true;
@@ -91,17 +91,17 @@ final class RiseParser
         }
 
         return new RiseSetResult(
-            body:      $query->body,
-            utcDate:   $query->utcDate,
+            body: $query->body,
+            utcDate: $query->utcDate,
             localDate: $query->localDate,
-            timezone:  $query->timezone,
+            timezone: $query->timezone,
             longitude: $query->longitude,
-            latitude:  $query->latitude,
+            latitude: $query->latitude,
             elevation: $query->elevation,
-            discMode:  $query->discMode,
-            events:    $filtered,
+            discMode: $query->discMode,
+            events: $filtered,
             riseFound: $riseFound,
-            setFound:  $setFound,
+            setFound: $setFound,
         );
     }
 
@@ -113,8 +113,8 @@ final class RiseParser
      */
     private function parseUtcDateTime(string $date, string $time): ?Carbon
     {
-        $parts   = explode('.', $time, 2);
-        $hms     = $parts[0];           // 'HH:MM:SS'
+        $parts = explode('.', $time, 2);
+        $hms = $parts[0];           // 'HH:MM:SS'
         $fracRaw = $parts[1] ?? '0';
 
         // Normalise to 6 digits: '9' → '900000', '94' → '940000', '' → '000000'

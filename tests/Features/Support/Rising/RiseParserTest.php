@@ -2,7 +2,6 @@
 
 use Carbon\Carbon;
 use DivineaLabs\Swisseph\Data\RiseSetEvent;
-use DivineaLabs\Swisseph\Data\RiseSetResult;
 use DivineaLabs\Swisseph\Enums\DiscMode;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Enums\RiseSetEventType;
@@ -18,22 +17,22 @@ function makeModeAQuery(
     string $utcDate = '2026-02-14',
 ): RiseQuery {
     return new RiseQuery(
-        body:                  $body,
-        windowStartUtc:        Carbon::parse($utcDate.' 00:00:00', 'UTC'),
-        timezone:              null,
-        localDate:             null,
-        utcDate:               $utcDate,
-        longitude:             17.038538,
-        latitude:              51.107883,
-        elevation:             0.0,
-        discMode:              DiscMode::BOTTOM,
-        noRefraction:          false,
+        body: $body,
+        windowStartUtc: Carbon::parse($utcDate.' 00:00:00', 'UTC'),
+        timezone: null,
+        localDate: null,
+        utcDate: $utcDate,
+        longitude: 17.038538,
+        latitude: 51.107883,
+        elevation: 0.0,
+        discMode: DiscMode::BOTTOM,
+        noRefraction: false,
         anchorToLocalMidnight: false,
-        windowDays:            3,
-        stepDays:              1.0,
-        atmosphericModel:      null,
-        observerModel:         null,
-        opticalModel:          null,
+        windowDays: 3,
+        stepDays: 1.0,
+        atmosphericModel: null,
+        observerModel: null,
+        opticalModel: null,
     );
 }
 
@@ -44,22 +43,22 @@ function makeModeBQuery(
     string $utcDate = '2026-02-13',
 ): RiseQuery {
     return new RiseQuery(
-        body:                  $body,
-        windowStartUtc:        Carbon::parse($utcDate.' 23:00:00', 'UTC'),
-        timezone:              $timezone,
-        localDate:             $localDate,
-        utcDate:               $utcDate,
-        longitude:             17.038538,
-        latitude:              51.107883,
-        elevation:             0.0,
-        discMode:              DiscMode::BOTTOM,
-        noRefraction:          false,
+        body: $body,
+        windowStartUtc: Carbon::parse($utcDate.' 23:00:00', 'UTC'),
+        timezone: $timezone,
+        localDate: $localDate,
+        utcDate: $utcDate,
+        longitude: 17.038538,
+        latitude: 51.107883,
+        elevation: 0.0,
+        discMode: DiscMode::BOTTOM,
+        noRefraction: false,
         anchorToLocalMidnight: false,
-        windowDays:            3,
-        stepDays:              1.0,
-        atmosphericModel:      null,
-        observerModel:         null,
-        opticalModel:          null,
+        windowDays: 3,
+        stepDays: 1.0,
+        atmosphericModel: null,
+        observerModel: null,
+        opticalModel: null,
     );
 }
 
@@ -262,8 +261,8 @@ it('Mode B: Tokyo cross-midnight — correct local day filtered', function () {
     // The rise event on UTC 2026-02-13 21:24 belongs to local date 2026-02-14
     $query = makeModeBQuery(
         localDate: '2026-02-14',
-        timezone:  'Asia/Tokyo',
-        utcDate:   '2026-02-13',
+        timezone: 'Asia/Tokyo',
+        utcDate: '2026-02-13',
     );
 
     $result = (new RiseParser)->parse(tokyoFixtureLines(), $query);

@@ -307,8 +307,8 @@ class Swisseph
         $resolvedBody = $body ?? $this->_riseBody;
 
         [$command, $query] = $this->riseCommandBuilder->buildWithQuery($resolvedBody);
-        $lines             = $this->executor->run($command);
-        $result            = $this->riseParser->parse($lines, $query);
+        $lines = $this->executor->run($command);
+        $result = $this->riseParser->parse($lines, $query);
 
         if ($strict && $result->events === []) {
             throw $query->isModeB()
@@ -332,8 +332,8 @@ class Swisseph
 
         foreach ($bodies as $body) {
             [$command, $query] = $this->riseCommandBuilder->buildWithQuery($body);
-            $lines             = $this->executor->run($command);
-            $result            = $this->riseParser->parse($lines, $query);
+            $lines = $this->executor->run($command);
+            $result = $this->riseParser->parse($lines, $query);
 
             if ($strict && $result->events === []) {
                 throw $query->isModeB()

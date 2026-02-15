@@ -7,5 +7,5 @@ namespace DivineaLabs\Swisseph\Enums;
 enum RiseSetEventType: string
 {
     case RISE = 'rise';
-    case SET  = 'set';
+    case SET = 'set';
 }

@@ -14,17 +14,17 @@ class RiseSetResult extends Data
 {
     public function __construct(
         public readonly PlanetBody $body,
-        public readonly string     $utcDate,     // always set
-        public readonly ?string    $localDate,   // null in Mode A
-        public readonly ?string    $timezone,    // null in Mode A
-        public readonly float      $longitude,
-        public readonly float      $latitude,
-        public readonly float      $elevation,
-        public readonly DiscMode   $discMode,
+        public readonly string $utcDate,     // always set
+        public readonly ?string $localDate,   // null in Mode A
+        public readonly ?string $timezone,    // null in Mode A
+        public readonly float $longitude,
+        public readonly float $latitude,
+        public readonly float $elevation,
+        public readonly DiscMode $discMode,
         /** @var RiseSetEvent[] */
-        public readonly array      $events,
-        public readonly bool       $riseFound,
-        public readonly bool       $setFound,
+        public readonly array $events,
+        public readonly bool $riseFound,
+        public readonly bool $setFound,
     ) {}
 
     /**
@@ -61,7 +61,7 @@ class RiseSetResult extends Data
     public function dayLength(): ?CarbonInterval
     {
         $rise = $this->rise();
-        $set  = $this->set();
+        $set = $this->set();
 
         if ($rise === null || $set === null) {
             return null;

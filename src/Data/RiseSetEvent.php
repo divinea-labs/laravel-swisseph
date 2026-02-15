@@ -12,12 +12,12 @@ use Spatie\LaravelData\Data;
 class RiseSetEvent extends Data
 {
     public function __construct(
-        public readonly PlanetBody       $body,
+        public readonly PlanetBody $body,
         public readonly RiseSetEventType $type,
-        public readonly Carbon           $utcAt,
-        public readonly string           $utcDate,   // 'Y-m-d' in UTC, always set
-        public readonly ?Carbon          $localAt,   // null in Mode A
-        public readonly ?string          $localDate, // null in Mode A
+        public readonly Carbon $utcAt,
+        public readonly string $utcDate,   // 'Y-m-d' in UTC, always set
+        public readonly ?Carbon $localAt,   // null in Mode A
+        public readonly ?string $localDate, // null in Mode A
     ) {}
 
     /**
@@ -26,11 +26,11 @@ class RiseSetEvent extends Data
     public static function utcOnly(PlanetBody $body, RiseSetEventType $type, Carbon $utcAt): self
     {
         return new self(
-            body:      $body,
-            type:      $type,
-            utcAt:     $utcAt,
-            utcDate:   $utcAt->format('Y-m-d'),
-            localAt:   null,
+            body: $body,
+            type: $type,
+            utcAt: $utcAt,
+            utcDate: $utcAt->format('Y-m-d'),
+            localAt: null,
             localDate: null,
         );
     }
@@ -44,11 +44,11 @@ class RiseSetEvent extends Data
         $localAt = $utcAt->copy()->setTimezone($timezone);
 
         return new self(
-            body:      $body,
-            type:      $type,
-            utcAt:     $utcAt,
-            utcDate:   $utcAt->format('Y-m-d'),
-            localAt:   $localAt,
+            body: $body,
+            type: $type,
+            utcAt: $utcAt,
+            utcDate: $utcAt->format('Y-m-d'),
+            localAt: $localAt,
             localDate: $localAt->format('Y-m-d'),
         );
     }

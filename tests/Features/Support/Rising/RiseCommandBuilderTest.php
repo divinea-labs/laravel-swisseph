@@ -1,7 +1,6 @@
 <?php
 
 use Carbon\Carbon;
-use DivineaLabs\Swisseph\Enums\DiscMode;
 use DivineaLabs\Swisseph\Enums\EphOptions;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Support\Rising\RiseCommandBuilder;
