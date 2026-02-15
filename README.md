@@ -216,6 +216,135 @@ Refer to the `docs/` directory for complete, end-to-end examples.
 
 ---
 
+## Rise / Set events
+
+Laravel Swisseph can compute **rise and set times** for celestial bodies using
+the Swiss Ephemeris `-rise` pipeline.
+
+Results are returned as structured DTOs with deterministic timezone behavior.
+
+### Sunrise / sunset (UTC day — Mode A)
+
+Mode A treats the date as a **UTC calendar day**.
+
+```php
+use DivineaLabs\Swisseph\Swisseph;
+
+$r = Swisseph::setDateTime('2026-02-14')
+    ->setLocation(17.038538, 51.107883)
+    ->getSunEvents();
+
+$r->rise()->utcAt;
+$r->set()->utcAt;
+$r->dayLength();
+```
+
+Example:
+
+```
+rise: 2026-02-14T06:10:32.900Z
+set:  2026-02-14T16:02:08.300Z
+```
+
+In Mode A:
+
+- timestamps are UTC
+- `localAt` and `localDate` are null
+- filtering is done by UTC day
+
+---
+
+### Local calendar day (timezone — Mode B)
+
+Mode B filters events by **local calendar day**.
+
+```php
+$r = Swisseph::setDateTime('2026-02-14', 'Europe/Warsaw')
+    ->setLocation(17.038538, 51.107883)
+    ->getSunEvents();
+
+$r->rise()->localAt;
+$r->set()->localAt;
+```
+
+Example:
+
+```
+rise: 2026-02-14T07:10:32.900+01:00
+set:  2026-02-14T17:02:08.300+01:00
+```
+
+In Mode B:
+
+- UTC timestamps are preserved internally
+- `localAt` contains projected local time
+- filtering is done by local calendar day
+
+---
+
+### Any celestial body
+
+```php
+use DivineaLabs\Swisseph\Enums\PlanetBody;
+
+$r = Swisseph::setDateTime('2026-02-14')
+    ->setLocation(17.038538, 51.107883)
+    ->getRiseSetEvents(PlanetBody::SATURN);
+```
+
+---
+
+### Multiple bodies (batch orchestration)
+
+Swiss Ephemeris supports only **one body per CLI run**.  
+The wrapper orchestrates multiple runs automatically.
+
+```php
+use DivineaLabs\Swisseph\Enums\PlanetBody;
+
+$batch = Swisseph::setDateTime('2026-02-14')
+    ->setLocation(17.038538, 51.107883)
+    ->getRiseSetEventsForBodies([
+        PlanetBody::SUN,
+        PlanetBody::MOON,
+        PlanetBody::SATURN,
+    ]);
+
+$batch->forBody(PlanetBody::SUN)->rise();
+$batch->forBody(PlanetBody::MOON)->rise();
+$batch->forBody(PlanetBody::SATURN)->rise();
+```
+
+---
+
+### Optional configuration
+
+```php
+use DivineaLabs\Swisseph\Enums\DiscMode;
+
+$r = Swisseph::setDateTime('2026-02-14', 'Europe/Warsaw')
+    ->setLocation(17.038538, 51.107883)
+    ->setDiscMode(DiscMode::BOTTOM)
+    ->withoutRefraction()
+    ->anchorToLocalMidnight()
+    ->searchBackward()
+    ->getSunEvents();
+```
+
+Available options include:
+
+- disc mode (`BOTTOM`, `CENTER`, `HINDU`)
+- atmospheric refraction toggle
+- backward search
+- atmospheric model
+- observer model
+- optical model
+
+All options are explicit and deterministic.
+
+---
+
+
 ### Inspecting the generated CLI command
 
 For debugging, auditing, or verification purposes, you can inspect the exact

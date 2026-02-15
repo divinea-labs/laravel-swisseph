@@ -2,6 +2,28 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.2.0 - 2026-02-15
+
+Added full rise/set events pipeline.
+
+- sunrise / sunset support
+- any celestial body
+- batch orchestration
+- Mode A (UTC day)
+- Mode B (local calendar day)
+- structured DTO output
+- microsecond precision timestamps
+
+Fully backward compatible.
+
+## v0.1.2 - 2025-12-26
+
+Improved developer experience by adding facade method annotations.
+
+- Better IDE autocompletion
+- Improved static analysis
+- No runtime behavior changes
+
 ## v0.1.1 - 2025-12-24
 
 v0.1.1 — Dependency Resolution Fix (PHP 8.4)

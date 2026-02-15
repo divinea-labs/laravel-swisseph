@@ -19,6 +19,17 @@ use Illuminate\Support\Facades\Facade;
  * @method static \DivineaLabs\Swisseph\Swisseph withHouses(?\DivineaLabs\Swisseph\Enums\HouseSystems $system = null)
  * @method static \DivineaLabs\Swisseph\Data\AstroTimeFrame get()
  * @method static string getCliCommand()
+ * @method static \DivineaLabs\Swisseph\Swisseph setRiseBody(\DivineaLabs\Swisseph\Enums\PlanetBody $body)
+ * @method static \DivineaLabs\Swisseph\Swisseph setDiscMode(\DivineaLabs\Swisseph\Enums\DiscMode $mode)
+ * @method static \DivineaLabs\Swisseph\Swisseph withoutRefraction()
+ * @method static \DivineaLabs\Swisseph\Swisseph anchorToLocalMidnight()
+ * @method static \DivineaLabs\Swisseph\Swisseph searchBackward()
+ * @method static \DivineaLabs\Swisseph\Swisseph setAtmosphericModel(float $pressure, float $temp, float $humidity, float $visibility)
+ * @method static \DivineaLabs\Swisseph\Swisseph setObserverModel(float $age, float $sn)
+ * @method static \DivineaLabs\Swisseph\Swisseph setOpticalModel(float $age, float $sn, bool $binocular, float $magnification, float $diameter, float $transmission)
+ * @method static \DivineaLabs\Swisseph\Data\RiseSetResult getRiseSetEvents(?\DivineaLabs\Swisseph\Enums\PlanetBody $body = null, bool $strict = false)
+ * @method static \DivineaLabs\Swisseph\Data\RiseSetBatchResult getRiseSetEventsForBodies(array $bodies, bool $strict = false)
+ * @method static \DivineaLabs\Swisseph\Data\RiseSetResult getSunEvents(bool $strict = false)
  */
 class Swisseph extends Facade
 {
