@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.2.0 — Rise/Set events pipeline - 2026-02-15
+
+Adds a full rise/set calculation pipeline based on Swiss Ephemeris -rise.
+
+Highlights:
+
+- sunrise/sunset support
+- any celestial body
+- multi-body batch orchestration
+- UTC + timezone filtering modes
+- structured DTO output
+- microsecond precision
+
+Fully backward compatible with existing API.
+
 ## v0.2.0 - 2026-02-15
 
 Added full rise/set events pipeline.
