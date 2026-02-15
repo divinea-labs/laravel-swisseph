@@ -122,7 +122,7 @@ final class RiseParser
 
         $dt = Carbon::createFromFormat('d.m.Y H:i:s', "{$date} {$hms}", 'UTC');
 
-        if (!($dt instanceof Carbon)) {
+        if (! ($dt instanceof Carbon)) {
             return null;
         }
 
