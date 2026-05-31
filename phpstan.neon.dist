@@ -11,5 +11,10 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
     treatPhpDocTypesAsCertain: false
+    # This is a package, so config_path() does not resolve to our config dir
+    # during analysis. Tell larastan where our config files actually live so
+    # the noEnvCallsOutsideOfConfig rule recognises env() in config/ as valid.
+    configDirectories:
+        - config
     bootstrapFiles:
         - tests/helpers.php

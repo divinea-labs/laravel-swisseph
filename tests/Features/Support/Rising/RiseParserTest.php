@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use Carbon\CarbonInterval;
 use DivineaLabs\Swisseph\Data\RiseSetEvent;
 use DivineaLabs\Swisseph\Enums\DiscMode;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
@@ -308,7 +309,7 @@ it('dayLength() returns CarbonInterval difference between rise and set utcAt', f
     $dl = $result->dayLength();
 
     expect($dl)->not->toBeNull();
-    expect($dl)->toBeInstanceOf(\Carbon\CarbonInterval::class);
+    expect($dl)->toBeInstanceOf(CarbonInterval::class);
     // Roughly 9h51m from the fixture
     expect($dl->totalSeconds)->toBeGreaterThan(0);
 });

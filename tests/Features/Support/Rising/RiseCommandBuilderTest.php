@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use DivineaLabs\Swisseph\Data\SwissephCommand;
 use DivineaLabs\Swisseph\Enums\EphOptions;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Support\Rising\RiseCommandBuilder;
@@ -320,7 +321,7 @@ it('buildWithQuery returns a two-element tuple of SwissephCommand and RiseQuery'
     $result = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::SATURN);
 
     expect($result)->toBeArray()->toHaveCount(2);
-    expect($result[0])->toBeInstanceOf(\DivineaLabs\Swisseph\Data\SwissephCommand::class);
+    expect($result[0])->toBeInstanceOf(SwissephCommand::class);
     expect($result[1])->toBeInstanceOf(RiseQuery::class);
 });
 

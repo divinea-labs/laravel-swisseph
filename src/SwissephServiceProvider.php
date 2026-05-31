@@ -32,7 +32,7 @@ class SwissephServiceProvider extends PackageServiceProvider
         $this->app->bind(RiseCommandBuilder::class);
         $this->app->bind(RiseParser::class);
 
-        $this->app->bind(\DivineaLabs\Swisseph\Swisseph::class, function ($app) {
+        $this->app->bind(Swisseph::class, function ($app) {
             return new Swisseph(
                 $app->make(SwissephCommandBuilder::class),
                 $app->make(SwissephExecutor::class),
@@ -43,6 +43,6 @@ class SwissephServiceProvider extends PackageServiceProvider
         });
 
         // Alias for easier access
-        $this->app->alias(\DivineaLabs\Swisseph\Swisseph::class, 'swisseph');
+        $this->app->alias(Swisseph::class, 'swisseph');
     }
 }

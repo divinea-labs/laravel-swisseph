@@ -31,7 +31,7 @@ This package exists to:
 ## Requirements & Compatibility
 
 - PHP **8.3** or **8.4**
-- Laravel **11.x** or **12.x**
+- Laravel **11.x**, **12.x** or **13.x**
 - Swiss Ephemeris (`swetest`) installed locally
 
 This package is tested against the officially supported Laravel versions
