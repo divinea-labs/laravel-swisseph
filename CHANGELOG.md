@@ -2,6 +2,28 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.2.1 — Laravel 13 support - 2026-05-31
+
+Adds official support for **Laravel 13**, alongside the existing Laravel 11 and 12.
+
+This is a fully backward-compatible, additive release — no API changes, no removals.
+
+### Added
+
+- Laravel 13.x support (`illuminate/contracts` now allows `^13.0`)
+- Laravel 13 to the GitHub Actions test matrix (Orchestra Testbench `^11.0`)
+
+### Changed
+
+- Widened `orchestra/testbench` dev requirement to `^9.0 || ^10.0 || ^11.0`
+
+### Fixed
+
+- Static analysis: configured Larastan `configDirectories` so `env()` calls in `config/swisseph.php` are no longer falsely flagged when
+  analysing the package in isolation
+
+**Compatibility:** PHP 8.3 / 8.4 · Laravel 11.x, 12.x, 13.x
+
 ## v0.2.0 — Rise/Set events pipeline - 2026-02-15
 
 Adds a full rise/set calculation pipeline based on Swiss Ephemeris -rise.
