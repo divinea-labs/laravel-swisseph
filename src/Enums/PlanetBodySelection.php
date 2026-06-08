@@ -51,6 +51,12 @@ enum PlanetBodySelection: string
     case SELENA = 'Z'; // White Moon
     case WALDEMATH = 'w'; // Waldemath's dark Moon
 
+    // SP3 — extended body selectors. These steer the leading -p<letter>; the
+    // concrete target is supplied separately via -xf<name> / -xs<number> / -xv<number>.
+    case FIXED_STAR = 'f';      // -pf  (target via -xf<StarName>)
+    case ASTEROID = 's';        // -ps  (target via -xs<MPCnumber>)
+    case PLANETARY_MOON = 'v';  // -pv  (target via -xv<number>)
+
     /*
      *  x sidereal time
         e print a line of labels
@@ -107,6 +113,11 @@ enum PlanetBodySelection: string
             self::VULCAN => 'Vulcan',
             self::SELENA => 'Selena / White Moon',
             self::WALDEMATH => 'Waldemath\'s Dark Moon',
+
+            // SP3 selectors
+            self::FIXED_STAR => 'Fixed star',
+            self::ASTEROID => 'Asteroid (MPC number)',
+            self::PLANETARY_MOON => 'Planetary moon',
         };
     }
 }

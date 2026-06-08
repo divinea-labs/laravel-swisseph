@@ -2,40 +2,44 @@
 
 declare(strict_types=1);
 
-namespace DivineaLabs\Swisseph\Support\Command;
+namespace DivineaLabs\Swisseph\Support\Positions;
 
-use Carbon\Carbon;
+use DivineaLabs\Swisseph\Data\AstroTimeFrame;
+use DivineaLabs\Swisseph\Data\AstroTimeSeries;
 use DivineaLabs\Swisseph\Data\SwissephCommand;
 use DivineaLabs\Swisseph\Enums\AstroProperties;
-use DivineaLabs\Swisseph\Enums\EphOptions;
+use DivineaLabs\Swisseph\Enums\ComputedValue;
 use DivineaLabs\Swisseph\Enums\HouseSystems;
 use DivineaLabs\Swisseph\Enums\ObserverPosition;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Enums\PlanetBodySelection;
 use DivineaLabs\Swisseph\Enums\Sidereal;
-use DivineaLabs\Swisseph\Exceptions\InvalidEphOptionPassedException;
 use DivineaLabs\Swisseph\Exceptions\InvalidPlanetBodyForPlanetocentricCalculationException;
 use DivineaLabs\Swisseph\Exceptions\InvalidPlanetBodySelectionException;
 use DivineaLabs\Swisseph\Exceptions\InvalidPropertyPassedException;
+use DivineaLabs\Swisseph\Exceptions\InvalidStepCountException;
+use DivineaLabs\Swisseph\Support\Command\SwissephExecutor;
+use DivineaLabs\Swisseph\Support\Concerns\ResolvesSwissephEnvironment;
 
-class SwissephCommandBuilder
+class PositionsBuilder
 {
-    /** @var array<string, mixed> */
-    private array $options = [];
-
-    private Carbon $dateTime;
+    use ResolvesSwissephEnvironment;
 
     /** @var array<int, string> */
     private array $bodies = [];
+
+    /**
+     * Extra body-target arguments emitted verbatim after -p (e.g. xfSirius, xs433, xv1).
+     *
+     * @var array<int, string>
+     */
+    private array $bodyTargetArgs = [];
 
     /** @var AstroProperties[] */
     private array $defaultProperties = [];
 
     /** @var array<string, AstroProperties> */
     private array $customProperties = [];
-
-    /** @var array<string, EphOptions> */
-    private array $ephOptions = [];
 
     private float $longitude = -0.001545;
 
@@ -53,24 +57,24 @@ class SwissephCommandBuilder
 
     private ?HouseSystems $houseSystem = null;
 
+    /**
+     * Relative-ephemeris mode argument: 'd<code>' (differential) or 'D<code>' (midpoint),
+     * where <code> is the swetest selection code of the reference body. A single slot makes
+     * differential and midpoint mutually exclusive — the last call wins.
+     */
+    private ?string $relativeMode = null;
+
+    private ?int $stepCount = null;
+
+    private ?string $stepSize = null;
+
+    protected ?SwissephExecutor $executor = null;
+
+    protected ?PositionsParser $parser = null;
+
     public function __construct()
     {
-        $exe = (string) config('swisseph.executable', '');
-        $dir = str_replace('\\', '/', (string) config('swisseph.ephemeris_dir', ''));
-        $dir = rtrim($dir, '/');
-        $dir = '/'.ltrim($dir, '/');
-
-        $this->options = [
-            'executable' => $exe,
-            'ephe_dir' => 'edir'.$dir,
-        ];
-
-        // Load eph options from config (array of enums)
-        foreach ((array) config('swisseph.eph_options', []) as $v) {
-            if ($v instanceof EphOptions) {
-                $this->ephOptions[$v->value] = $v; // de-dupe + map
-            }
-        }
+        $this->bootSwissephEnvironment();
 
         // Default properties always included
         $this->defaultProperties = [
@@ -79,21 +83,25 @@ class SwissephCommandBuilder
             AstroProperties::LONGITUDE_DECIMAL,
             AstroProperties::SPEED_LONGITUDE_DECIMAL,
         ];
-
-        $this->dateTime = Carbon::now()->utc();
     }
 
     /**
-     * Function to set date and time for the calculation.
-     *
-     * @return $this
+     * Execute the command and return parsed AstroTimeFrame.
      */
-    public function setDateTime(Carbon|string $date, string $tz = 'UTC'): self
+    public function get(): AstroTimeFrame
     {
-        $dt = is_string($date) ? Carbon::parse($date, $tz) : $date;
-        $this->dateTime = $dt->utc();
+        $command = $this->build();
+        $lines = ($this->executor ?? app(SwissephExecutor::class))->run($command);
 
-        return $this;
+        return ($this->parser ?? app(PositionsParser::class))->parse($lines, $this);
+    }
+
+    /**
+     * Return the CLI command string without executing.
+     */
+    public function getCliCommand(): string
+    {
+        return $this->build()->toCliString();
     }
 
     /**
@@ -126,6 +134,90 @@ class SwissephCommandBuilder
     }
 
     /**
+     * Select a fixed star by catalog name (-pf -xf<name>).
+     *
+     * The result row's name column carries the catalog name (e.g. "Sirius,alCMa").
+     *
+     * @return $this
+     */
+    public function selectFixedStar(string $name): self
+    {
+        $name = trim($name);
+
+        if ($name === '') {
+            throw InvalidPlanetBodySelectionException::invalidValue($name);
+        }
+
+        $this->bodies = [PlanetBodySelection::FIXED_STAR->value];
+        $this->bodyTargetArgs = ['xf'.$name];
+
+        return $this;
+    }
+
+    /**
+     * Select one or more output-only computed values (Sidereal Time, Delta T,
+     * Ecl. Obliquity, Ayanamsha, Time equation). They are appended to the -p
+     * selector (e.g. -pqo). Ayanamsha additionally requires withSidereal().
+     *
+     * @return $this
+     */
+    public function selectComputedValue(ComputedValue ...$values): self
+    {
+        if ($values === []) {
+            throw InvalidPlanetBodySelectionException::invalidValue('');
+        }
+
+        $this->bodies = array_map(
+            static fn (ComputedValue $v): string => $v->value,
+            $values,
+        );
+        $this->bodyTargetArgs = [];
+
+        return $this;
+    }
+
+    /**
+     * Select an asteroid by its MPC number (-ps -xs<number>).
+     *
+     * @return $this
+     */
+    public function selectAsteroid(int $mpcNumber): self
+    {
+        if ($mpcNumber <= 0) {
+            throw InvalidPlanetBodySelectionException::invalidValue((string) $mpcNumber);
+        }
+
+        $this->bodies = [PlanetBodySelection::ASTEROID->value];
+        $this->bodyTargetArgs = ['xs'.$mpcNumber];
+
+        return $this;
+    }
+
+    /**
+     * Select a planetary moon by its swetest number (-pv -xv<number>).
+     *
+     * Thin selector: reuses the standard position-row parser. No captured unit
+     * fixture exists yet for -pv output — shape is asserted by
+     * PositionsMoonsIntegrationTest (self-skipping). When that test runs green
+     * against a real binary, the captured block SHOULD be promoted into a
+     * tests/Fixtures/swetest-moon-<n>.txt fixture and a unit parser test added.
+     * SP3: moon unit fixture deferred to integration capture — see PositionsMoonsIntegrationTest.
+     *
+     * @return $this
+     */
+    public function selectMoon(int $number): self
+    {
+        if ($number <= 0) {
+            throw InvalidPlanetBodySelectionException::invalidValue((string) $number);
+        }
+
+        $this->bodies = [PlanetBodySelection::PLANETARY_MOON->value];
+        $this->bodyTargetArgs = ['xv'.$number];
+
+        return $this;
+    }
+
+    /**
      * Function to select planet bodies for the calculation.
      *
      * @return $this
@@ -133,6 +225,7 @@ class SwissephCommandBuilder
     public function selectBodies(PlanetBodySelection|array|string $bodies): self
     {
         $this->bodies = [];
+        $this->bodyTargetArgs = []; // reset any -xf/-xs/-xv target from a prior fixed-star/asteroid/moon selection
 
         if ($bodies instanceof PlanetBodySelection) {
             $this->bodies[] = $bodies->value;
@@ -285,45 +378,112 @@ class SwissephCommandBuilder
     }
 
     /**
-     * Function to set ephemeris options for the calculation.
+     * Differential ephemeris: print the longitude/latitude difference between the reference
+     * body and each selected body. Emits -d<code> where <code> is the reference's swetest
+     * selection code (e.g. Sun -> '0' -> -d0, Chiron -> 'D' -> -dD). The output name column
+     * becomes "A-B" (e.g. "Mer-Sun").
      *
-     * @param  array  $options
-     * @return $this
+     * NOTE: the reference is a PlanetBodySelection (swetest selection code), NOT a PlanetBody
+     * (internal number). swetest reads -d/-D references the same way as -p, so -d15 would be
+     * parsed as code '1' then '5' (Moon...), not "body 15" — using the selection code is the
+     * only correct mapping for asteroids/Chiron/etc.
      *
-     * @throws InvalidEphOptionPassedException
+     * Mutually exclusive with midpointTo(): the last call wins.
      */
-    public function withEphOptions(EphOptions|array ...$options): static
+    public function differentialTo(PlanetBodySelection $reference): self
     {
-        foreach ($options as $opt) {
-            $items = is_array($opt) ? $opt : [$opt];
+        $this->relativeMode = 'd'.$reference->value;
 
-            foreach ($items as $item) {
-                if (! $item instanceof EphOptions) {
-                    throw new InvalidEphOptionPassedException($item);
-                }
+        return $this;
+    }
 
-                // de-dupe by CLI value
-                $this->ephOptions[$item->value] = $item;
-            }
+    /**
+     * Midpoint ephemeris: print the midpoint between the reference body and each selected body.
+     * Emits -D<code> (e.g. Chiron -> 'D' -> -DD). The output name column becomes "A/B"
+     * (e.g. "Sat/Chi"). See differentialTo() for why the reference is a PlanetBodySelection.
+     *
+     * Mutually exclusive with differentialTo(): the last call wins.
+     */
+    public function midpointTo(PlanetBodySelection $reference): self
+    {
+        $this->relativeMode = 'D'.$reference->value;
+
+        return $this;
+    }
+
+    /**
+     * Request a batch ephemeris run: emit N time-stepped frames in ONE process.
+     *
+     * @param  int  $count  Number of frames (`-n<count>`); must be >= 1.
+     * @param  string|null  $stepSize  Raw swetest step token (`-s<stepSize>`):
+     *                                 bare = days (`1`, `6`), `m` = minutes (`15m`; `360m` = 6h —
+     *                                 there is NO hour suffix), `mo` = months (`3mo`),
+     *                                 `y` = years (`10y`), `s` = seconds (`1s`). Sub-day works.
+     *
+     * @throws InvalidStepCountException
+     */
+    public function steps(int $count, ?string $stepSize = null): self
+    {
+        if ($count < 1) {
+            throw InvalidStepCountException::mustBePositive($count);
+        }
+
+        $this->stepCount = $count;
+        $this->stepSize = $stepSize;
+
+        // Each frame must be timestamp-prefixed so the parser can group rows.
+        // T must be the FIRST element of the emitted -f sequence.
+        // If the caller already placed T in $customProperties (via withProperties() before
+        // steps()), remove it from there so it does not end up appended after the defaults.
+        unset($this->customProperties[AstroProperties::DATE_FORMAT_DD_MM_YYYY->value]);
+
+        // Now ensure T leads $defaultProperties (prepend if not already first).
+        if (($this->defaultProperties[0] ?? null) !== AstroProperties::DATE_FORMAT_DD_MM_YYYY) {
+            // Remove any stale occurrence deeper in defaultProperties (defensive).
+            $this->defaultProperties = array_values(array_filter(
+                $this->defaultProperties,
+                static fn (AstroProperties $p) => $p !== AstroProperties::DATE_FORMAT_DD_MM_YYYY,
+            ));
+            array_unshift($this->defaultProperties, AstroProperties::DATE_FORMAT_DD_MM_YYYY);
         }
 
         return $this;
     }
 
     /**
-     * Function to build the final Swisseph command.
-     *
-     * @throws InvalidPlanetBodyForPlanetocentricCalculationException
+     * Execute the command and return a time series of N frames (batch ephemeris).
      */
+    public function getSeries(): AstroTimeSeries
+    {
+        $command = $this->build();
+        $lines = ($this->executor ?? app(SwissephExecutor::class))->run($command);
+
+        return ($this->parser ?? app(PositionsParser::class))->parseSeries($lines, $this);
+    }
+
     public function build(): SwissephCommand
     {
         $args = [
-            $this->options['ephe_dir'],
-            ...$this->buildEphOptions(),
-            $this->buildDateArgument(),
-            $this->buildTimeArgument(),
+            $this->epheDirArg(),
+            ...$this->ephOptionArgs(),
+            $this->dateArg(),
+            $this->utTimeArg(),
             $this->buildBodies(),
+            ...$this->bodyTargetArgs,
         ];
+
+        if ($this->relativeMode !== null) {
+            $args[] = $this->relativeMode;
+        }
+
+        // SP4: batch ephemeris steps
+        if ($this->stepCount !== null) {
+            $args[] = 'n'.$this->stepCount;
+
+            if ($this->stepSize !== null && $this->stepSize !== '') {
+                $args[] = 's'.$this->stepSize;
+            }
+        }
 
         if ($houses = $this->buildHouses()) {
             $args[] = $houses;
@@ -342,7 +502,7 @@ class SwissephCommandBuilder
         $args[] = 'head';
 
         return new SwissephCommand(
-            executable: $this->options['executable'],
+            executable: $this->executable,
             arguments: $args
         );
     }
@@ -372,14 +532,6 @@ class SwissephCommandBuilder
     }
 
     /**
-     * Getter for date.
-     */
-    public function getDate(): Carbon
-    {
-        return $this->dateTime;
-    }
-
-    /**
      * Getter for house system.
      */
     public function getHouseSystem(): ?HouseSystems
@@ -396,14 +548,6 @@ class SwissephCommandBuilder
             $this->defaultProperties,
             array_values($this->customProperties)
         );
-    }
-
-    /**
-     * Format float value to string with up to 8 decimal places, trimming trailing zeros.
-     */
-    private function fmt(float $v): string
-    {
-        return rtrim(rtrim(number_format($v, 8, '.', ''), '0'), '.');
     }
 
     /**
@@ -463,35 +607,5 @@ class SwissephCommandBuilder
 
             default => $this->observerPosition->value,
         };
-    }
-
-    private function buildDateArgument(): string
-    {
-        return 'b'.$this->dateTime->format('d.m.Y');
-    }
-
-    private function buildTimeArgument(): string
-    {
-        return 'ut'.$this->dateTime->format('H:i:s');
-    }
-
-    /**
-     * Build ephemeris options arguments.
-     *
-     * @return string[]
-     */
-    private function buildEphOptions(): array
-    {
-        $opts = array_values($this->ephOptions);
-
-        usort(
-            $opts,
-            static fn (EphOptions $a, EphOptions $b) => $a->value <=> $b->value
-        );
-
-        return array_map(
-            static fn (EphOptions $opt) => $opt->value,
-            $opts
-        );
     }
 }

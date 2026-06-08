@@ -4,8 +4,8 @@ use Carbon\Carbon;
 use DivineaLabs\Swisseph\Data\SwissephCommand;
 use DivineaLabs\Swisseph\Enums\EphOptions;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
-use DivineaLabs\Swisseph\Support\Rising\RiseCommandBuilder;
 use DivineaLabs\Swisseph\Support\Rising\RiseQuery;
+use DivineaLabs\Swisseph\Support\Rising\RisingsBuilder;
 
 afterEach(function () {
     Carbon::setTestNow();
@@ -18,7 +18,7 @@ afterEach(function () {
 it('defaults to today UTC start-of-day when setDateTime was never called', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 12, 0, 0, 'UTC'));
 
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     [, $query] = $builder->buildWithQuery();
 
     expect($query->utcDate)->toBe('2026-02-14');
@@ -29,7 +29,7 @@ it('defaults to today UTC start-of-day when setDateTime was never called', funct
 it('defaults to Sun when buildWithQuery is called without a body argument', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     [$command, $query] = $builder->buildWithQuery();
 
     expect($command->arguments)->toContain('p0');
@@ -43,7 +43,7 @@ it('defaults to Sun when buildWithQuery is called without a body argument', func
 it('emits p0 for Sun', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    [$command] = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::SUN);
+    [$command] = (new RisingsBuilder)->buildWithQuery(PlanetBody::SUN);
 
     expect($command->arguments)->toContain('p0');
 });
@@ -51,7 +51,7 @@ it('emits p0 for Sun', function () {
 it('emits p6 for Saturn', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    [$command] = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::SATURN);
+    [$command] = (new RisingsBuilder)->buildWithQuery(PlanetBody::SATURN);
 
     expect($command->arguments)->toContain('p6');
 });
@@ -59,7 +59,7 @@ it('emits p6 for Saturn', function () {
 it('emits p1 for Moon', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    [$command] = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::MOON);
+    [$command] = (new RisingsBuilder)->buildWithQuery(PlanetBody::MOON);
 
     expect($command->arguments)->toContain('p1');
 });
@@ -67,7 +67,7 @@ it('emits p1 for Moon', function () {
 it('emits p15 for Chiron', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    [$command] = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::CHIRON);
+    [$command] = (new RisingsBuilder)->buildWithQuery(PlanetBody::CHIRON);
 
     expect($command->arguments)->toContain('p15');
 });
@@ -75,7 +75,7 @@ it('emits p15 for Chiron', function () {
 it('two sequential calls with different bodies do not bleed state', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
 
     [$cmd1, $q1] = $builder->buildWithQuery(PlanetBody::SUN);
     [$cmd2, $q2] = $builder->buildWithQuery(PlanetBody::SATURN);
@@ -91,7 +91,7 @@ it('two sequential calls with different bodies do not bleed state', function () 
 // ---------------------------------------------------------------------------
 
 it('is Mode A when no timezone given', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [, $query] = $builder->buildWithQuery();
@@ -102,7 +102,7 @@ it('is Mode A when no timezone given', function () {
 });
 
 it('is Mode A when UTC timezone given', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14', 'UTC');
 
     [, $query] = $builder->buildWithQuery();
@@ -111,7 +111,7 @@ it('is Mode A when UTC timezone given', function () {
 });
 
 it('is Mode B for a non-UTC timezone', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14', 'Europe/Warsaw');
 
     [, $query] = $builder->buildWithQuery();
@@ -122,7 +122,7 @@ it('is Mode B for a non-UTC timezone', function () {
 });
 
 it('Mode A: b token uses UTC date from input', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -131,7 +131,7 @@ it('Mode A: b token uses UTC date from input', function () {
 });
 
 it('Mode B: b token uses UTC date of local midnight (Warsaw UTC+1 → UTC prev day)', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14', 'Europe/Warsaw');
 
     [$command] = $builder->buildWithQuery();
@@ -140,7 +140,7 @@ it('Mode B: b token uses UTC date of local midnight (Warsaw UTC+1 → UTC prev d
 });
 
 it('Mode B + anchorToLocalMidnight emits ut token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14', 'Europe/Warsaw');
     $builder->anchorToLocalMidnight();
 
@@ -150,7 +150,7 @@ it('Mode B + anchorToLocalMidnight emits ut token', function () {
 });
 
 it('anchorToLocalMidnight is a no-op in Mode A', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->anchorToLocalMidnight();
 
@@ -161,8 +161,8 @@ it('anchorToLocalMidnight is a no-op in Mode A', function () {
 });
 
 it('time component is ignored — same output for 12:00 and 00:00 on same date (Mode A)', function () {
-    $b1 = (new RiseCommandBuilder)->setDateTime('2026-02-14 00:00', null);
-    $b2 = (new RiseCommandBuilder)->setDateTime('2026-02-14 12:00', null);
+    $b1 = (new RisingsBuilder)->setDateTime('2026-02-14 00:00', null);
+    $b2 = (new RisingsBuilder)->setDateTime('2026-02-14 12:00', null);
 
     [$c1] = $b1->buildWithQuery();
     [$c2] = $b2->buildWithQuery();
@@ -176,7 +176,7 @@ it('time component is ignored — same output for 12:00 and 00:00 on same date (
 // ---------------------------------------------------------------------------
 
 it('withEphOptions adds token to args', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->withEphOptions(EphOptions::NO_ABERRATION);
 
@@ -186,7 +186,7 @@ it('withEphOptions adds token to args', function () {
 });
 
 it('de-duplicates eph options — calling same option twice emits once', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->withEphOptions(EphOptions::NO_ABERRATION);
     $builder->withEphOptions(EphOptions::NO_ABERRATION);
@@ -201,7 +201,7 @@ it('de-duplicates eph options — calling same option twice emits once', functio
 // ---------------------------------------------------------------------------
 
 it('setAtmosphericModel emits at token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->setAtmosphericModel(1013.25, 15, 40, 0);
 
@@ -211,7 +211,7 @@ it('setAtmosphericModel emits at token', function () {
 });
 
 it('no at token when setAtmosphericModel not called', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -221,7 +221,7 @@ it('no at token when setAtmosphericModel not called', function () {
 });
 
 it('setObserverModel emits obs token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->setObserverModel(50, 1.2);
 
@@ -231,7 +231,7 @@ it('setObserverModel emits obs token', function () {
 });
 
 it('no obs token when setObserverModel not called', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -241,7 +241,7 @@ it('no obs token when setObserverModel not called', function () {
 });
 
 it('setOpticalModel emits opt token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->setOpticalModel(50, 1.2, false, 1, 0, 0.5);
 
@@ -251,7 +251,7 @@ it('setOpticalModel emits opt token', function () {
 });
 
 it('no opt token when setOpticalModel not called', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -265,7 +265,7 @@ it('no opt token when setOpticalModel not called', function () {
 // ---------------------------------------------------------------------------
 
 it('searchBackward emits bwd token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->searchBackward();
 
@@ -275,7 +275,7 @@ it('searchBackward emits bwd token', function () {
 });
 
 it('no bwd token when searchBackward not called', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -288,7 +288,7 @@ it('no bwd token when searchBackward not called', function () {
 // ---------------------------------------------------------------------------
 
 it('always emits rise token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -297,7 +297,7 @@ it('always emits rise token', function () {
 });
 
 it('default disc mode is discbottom', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
 
     [$command] = $builder->buildWithQuery();
@@ -306,7 +306,7 @@ it('default disc mode is discbottom', function () {
 });
 
 it('withoutRefraction emits norefrac token', function () {
-    $builder = new RiseCommandBuilder;
+    $builder = new RisingsBuilder;
     $builder->setDateTime('2026-02-14');
     $builder->withoutRefraction();
 
@@ -318,7 +318,7 @@ it('withoutRefraction emits norefrac token', function () {
 it('buildWithQuery returns a two-element tuple of SwissephCommand and RiseQuery', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    $result = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::SATURN);
+    $result = (new RisingsBuilder)->buildWithQuery(PlanetBody::SATURN);
 
     expect($result)->toBeArray()->toHaveCount(2);
     expect($result[0])->toBeInstanceOf(SwissephCommand::class);
@@ -328,7 +328,7 @@ it('buildWithQuery returns a two-element tuple of SwissephCommand and RiseQuery'
 it('RiseQuery body matches the argument passed to buildWithQuery', function () {
     Carbon::setTestNow(Carbon::create(2026, 2, 14, 0, 0, 0, 'UTC'));
 
-    [, $query] = (new RiseCommandBuilder)->buildWithQuery(PlanetBody::SATURN);
+    [, $query] = (new RisingsBuilder)->buildWithQuery(PlanetBody::SATURN);
 
     expect($query->body)->toBe(PlanetBody::SATURN);
 });

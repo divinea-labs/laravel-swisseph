@@ -9,7 +9,7 @@ use DivineaLabs\Swisseph\Enums\DiscMode;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 
 /**
- * Value object carrying all caller intent from RiseCommandBuilder through to RiseParser.
+ * Value object carrying all caller intent from RisingsBuilder through to RiseParser.
  * Never exposed in the public API.
  */
 final class RiseQuery

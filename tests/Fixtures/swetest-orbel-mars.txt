@@ -1,0 +1,23 @@
+date (dmy) 1.1.2026 greg.   0:00:00 TT		version 2.10.02
+UT:  2461041.499178233     delta t: 71.000655 sec
+TT:  2461041.500000000
+Epsilon (t/m)     23°26'17.2935   23°26' 9.2285
+Nutation           0° 0' 5.4212    0° 0' 8.0650
+Mars             282°41'15.1684   -0°53'27.9922    2.410699395    0°45'58.9047
+semiaxis         	1.523694
+eccentricity     	0.093485
+inclination      	1.847499
+asc. node       	49.482984
+arg. pericenter  	286.623510
+pericenter       	336.106494
+mean longitude   	291.928275
+mean anomaly     	315.821781
+ecc. anomaly     	311.830723
+true anomaly     	307.703699
+time pericenter  	2460438.822970  8.05.2024,  07:45:04.6
+dist. pericenter 	1.381252
+dist. apocenter  	1.666136
+mean daily motion	0.524032
+sid. period (y)  	1.880890
+trop. period (y) 	1.880829
+synodic cycle (d)	779.936372

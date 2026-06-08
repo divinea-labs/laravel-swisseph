@@ -2,6 +2,30 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## [Unreleased] / 0.3.0
+
+**BREAKING:** Entry points restructured into sub-builders — use `Swisseph::positions()` / `Swisseph::risings()` instead of the flat fluent API.
+
+Migration:
+
+```php
+// Before (0.2.x)
+Swisseph::setLocation(...)->setDateTime(...)->get();
+Swisseph::setDateTime(...)->setLocation(...)->getSunEvents();
+
+// After (0.3.0)
+Swisseph::positions()->setLocation(...)->setDateTime(...)->get();
+Swisseph::risings()->setDateTime(...)->setLocation(...)->getSunEvents();
+```
+
+Internal changes:
+- Shared `ResolvesSwissephEnvironment` trait (executable/ephe-dir/date/time/eph-options).
+- `SwissephCommandBuilder` renamed to `PositionsBuilder` (`src/Support/Positions/`).
+- `SwissephParser` renamed to `PositionsParser` (`src/Support/Positions/`).
+- `RiseCommandBuilder` renamed to `RisingsBuilder` (`src/Support/Rising/`).
+- `SwissephExecutor` gains `runRaw()` + header-skip filtering for event mode output.
+- `Swisseph` class is now a thin factory; terminal methods (`get()`, `getCliCommand()`, `getRiseSetEvents()`, etc.) live on the respective builder.
+
 ## v0.2.1 — Laravel 13 support - 2026-05-31
 
 Adds official support for **Laravel 13**, alongside the existing Laravel 11 and 12.

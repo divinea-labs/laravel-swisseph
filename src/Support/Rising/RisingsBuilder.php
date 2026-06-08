@@ -5,14 +5,22 @@ declare(strict_types=1);
 namespace DivineaLabs\Swisseph\Support\Rising;
 
 use Carbon\Carbon;
+use DivineaLabs\Swisseph\Data\RiseSetBatchResult;
+use DivineaLabs\Swisseph\Data\RiseSetResult;
 use DivineaLabs\Swisseph\Data\SwissephCommand;
 use DivineaLabs\Swisseph\Enums\DiscMode;
-use DivineaLabs\Swisseph\Enums\EphOptions;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
-use DivineaLabs\Swisseph\Exceptions\InvalidEphOptionPassedException;
+use DivineaLabs\Swisseph\Exceptions\RiseSetNotFoundException;
+use DivineaLabs\Swisseph\Support\Command\SwissephExecutor;
+use DivineaLabs\Swisseph\Support\Concerns\ResolvesSwissephEnvironment;
 
-final class RiseCommandBuilder
+final class RisingsBuilder
 {
+    use ResolvesSwissephEnvironment {
+        setDateTime as private bootSetDateTime;
+        getDate as private bootGetDate;
+    }
+
     // Defaults — match swetest built-in defaults where applicable
     private float $longitude = -0.001545;   // Greenwich
 
@@ -32,9 +40,6 @@ final class RiseCommandBuilder
 
     private float $stepDays = 1.0;
 
-    /** @var array<string, EphOptions> de-duped by value, same as SwissephCommandBuilder */
-    private array $ephOptions = [];
-
     private ?string $atmosphericModel = null;  // "at{press},{temp},{rhum},{visr}" — emitted when set
 
     private ?string $observerModel = null;  // "obs{age},{sn}"                  — emitted when set
@@ -50,27 +55,85 @@ final class RiseCommandBuilder
 
     private string $utcDate = '';      // always set before build
 
+    /** Default body for getRiseSetEvents() when no body argument is given. */
+    private PlanetBody $_riseBody = PlanetBody::SUN;
+
+    protected ?SwissephExecutor $executor = null;
+
+    protected ?RiseParser $riseParser = null;
+
     public function __construct()
     {
-        $exe = (string) config('swisseph.executable', '');
-        $dir = str_replace('\\', '/', (string) config('swisseph.ephemeris_dir', ''));
-        $dir = rtrim($dir, '/');
-        $dir = '/'.ltrim($dir, '/');
-
-        $this->edirToken = 'edir'.$dir;
-        $this->executable = $exe;
-
-        // Mirror SwissephCommandBuilder: load default eph options from config
-        foreach ((array) config('swisseph.eph_options', []) as $v) {
-            if ($v instanceof EphOptions) {
-                $this->ephOptions[$v->value] = $v;
-            }
-        }
+        $this->bootSwissephEnvironment();
     }
 
-    private string $edirToken = '';
+    /**
+     * Set the default body for getRiseSetEvents() calls.
+     */
+    public function setRiseBody(PlanetBody $body): self
+    {
+        $this->_riseBody = $body;
 
-    private string $executable = '';
+        return $this;
+    }
+
+    /**
+     * Compute rise/set events for a single body.
+     */
+    public function getRiseSetEvents(?PlanetBody $body = null, bool $strict = false): RiseSetResult
+    {
+        $resolvedBody = $body ?? $this->_riseBody;
+
+        [$command, $query] = $this->buildWithQuery($resolvedBody);
+        $executor = $this->executor ?? app(SwissephExecutor::class);
+        $parser = $this->riseParser ?? app(RiseParser::class);
+        $lines = $executor->run($command);
+        $result = $parser->parse($lines, $query);
+
+        if ($strict && $result->events === []) {
+            throw $query->isModeB()
+                ? RiseSetNotFoundException::forLocalDate($resolvedBody, $query->localDate, $query->timezone)
+                : RiseSetNotFoundException::forUtcDate($resolvedBody, $query->utcDate);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Compute rise/set events for multiple bodies.
+     *
+     * @param  PlanetBody[]  $bodies
+     */
+    public function getRiseSetEventsForBodies(array $bodies, bool $strict = false): RiseSetBatchResult
+    {
+        $results = [];
+        $executor = $this->executor ?? app(SwissephExecutor::class);
+        $parser = $this->riseParser ?? app(RiseParser::class);
+
+        foreach ($bodies as $body) {
+            [$command, $query] = $this->buildWithQuery($body);
+            $lines = $executor->run($command);
+            $result = $parser->parse($lines, $query);
+
+            if ($strict && $result->events === []) {
+                throw $query->isModeB()
+                    ? RiseSetNotFoundException::forLocalDate($body, $query->localDate, $query->timezone)
+                    : RiseSetNotFoundException::forUtcDate($body, $query->utcDate);
+            }
+
+            $results[$body->value] = $result;
+        }
+
+        return new RiseSetBatchResult(results: $results);
+    }
+
+    /**
+     * Convenience alias — zero-argument shorthand for Sun rise/set.
+     */
+    public function getSunEvents(bool $strict = false): RiseSetResult
+    {
+        return $this->getRiseSetEvents(PlanetBody::SUN, $strict);
+    }
 
     /**
      * Set the date/time for the calculation window.
@@ -78,8 +141,9 @@ final class RiseCommandBuilder
      * - Mode A (default): pass a UTC string or Carbon, or omit timezone / pass 'UTC'.
      * - Mode B: pass any non-UTC IANA timezone string.
      *
-     * The 'UTC' → null mapping is handled by Swisseph::setDateTime before delegating here;
-     * RiseCommandBuilder itself accepts a nullable $timezone where null = Mode A.
+     * This method itself maps a null or 'UTC' $timezone to Mode A (null internal timezone),
+     * storing the result in $windowStartUtc / $utcDate / $localDate / $timezone rather than
+     * the trait's $dateTime field (which is not used by RisingsBuilder).
      */
     public function setDateTime(Carbon|string $dateTime, ?string $timezone = null): self
     {
@@ -187,26 +251,6 @@ final class RiseCommandBuilder
     }
 
     /**
-     * Add/merge ephemeris options. Mirrors SwissephCommandBuilder::withEphOptions().
-     *
-     * @throws InvalidEphOptionPassedException
-     */
-    public function withEphOptions(EphOptions|array ...$options): self
-    {
-        foreach ($options as $opt) {
-            $items = is_array($opt) ? $opt : [$opt];
-            foreach ($items as $item) {
-                if (! $item instanceof EphOptions) {
-                    throw new InvalidEphOptionPassedException($item);
-                }
-                $this->ephOptions[$item->value] = $item;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * Emit at{pressure},{temp},{humidity},{visibility} when set.
      */
     public function setAtmosphericModel(
@@ -261,8 +305,8 @@ final class RiseCommandBuilder
         }
 
         $args = [
-            $this->edirToken,
-            ...$this->buildEphOptions(),
+            $this->epheDirArg(),
+            ...$this->ephOptionArgs(),
             'p'.$body->value,
             'rise',
             'geopos'.$this->fmt($this->longitude).','.$this->fmt($this->latitude).','.$this->fmt($this->elevation),
@@ -323,35 +367,5 @@ final class RiseCommandBuilder
         );
 
         return [$command, $query];
-    }
-
-    /**
-     * Format float to string with up to 8 decimal places, trimming trailing zeros.
-     * Identical to SwissephCommandBuilder::fmt().
-     */
-    private function fmt(float $v): string
-    {
-        return rtrim(rtrim(number_format($v, 8, '.', ''), '0'), '.');
-    }
-
-    /**
-     * Build sorted, de-duped eph option tokens.
-     * Mirrors SwissephCommandBuilder::buildEphOptions().
-     *
-     * @return string[]
-     */
-    private function buildEphOptions(): array
-    {
-        $opts = array_values($this->ephOptions);
-
-        usort(
-            $opts,
-            static fn (EphOptions $a, EphOptions $b) => $a->value <=> $b->value
-        );
-
-        return array_map(
-            static fn (EphOptions $opt) => $opt->value,
-            $opts
-        );
     }
 }

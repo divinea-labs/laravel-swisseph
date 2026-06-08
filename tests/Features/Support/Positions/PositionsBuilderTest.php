@@ -9,7 +9,7 @@ use DivineaLabs\Swisseph\Enums\PlanetBodySelection;
 use DivineaLabs\Swisseph\Enums\Sidereal;
 use DivineaLabs\Swisseph\Exceptions\InvalidPlanetBodyForPlanetocentricCalculationException;
 use DivineaLabs\Swisseph\Exceptions\InvalidPlanetBodySelectionException;
-use DivineaLabs\Swisseph\Support\Command\SwissephCommandBuilder;
+use DivineaLabs\Swisseph\Support\Positions\PositionsBuilder;
 use Illuminate\Support\Carbon;
 
 /*beforeEach(function () {
@@ -26,7 +26,7 @@ afterEach(function () {
 it('converts timezone to UTC and uses UT argument', function () {
     Carbon::setTestNow(Carbon::create(2025, 1, 1, 0, 0, 0, 'UTC'));
 
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setDateTime('2025-03-23 21:21:00', 'Europe/Warsaw');
 
     $cmd = $builder->build()->toProcessArray();
@@ -40,7 +40,7 @@ it('converts timezone to UTC and uses UT argument', function () {
  * Location and Houses
  */
 it('builds house argument with lon,lat and system and formats floats', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     $builder
         ->setLocation(17.0385380, 51.1078830, 'Wroclaw')
@@ -52,7 +52,7 @@ it('builds house argument with lon,lat and system and formats floats', function 
 });
 
 it('formats negative coordinates without trailing zeros', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     $builder->setLocation(-0.0015450, 51.4779280)->withHouses(HouseSystems::PLACIDUS);
 
@@ -65,34 +65,34 @@ it('formats negative coordinates without trailing zeros', function () {
  * Planet body selection
  */
 it('accepts selectBodies as enum', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->selectBodies(PlanetBodySelection::SUN);
 
     expect($builder->build()->toCliString())->toContain('-p0');
 });
 
 it('accepts selectBodies as array of enums', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->selectBodies([PlanetBodySelection::SUN, PlanetBodySelection::MOON]);
 
     expect($builder->build()->toCliString())->toContain('-p01');
 });
 
 it('accepts selectBodies as string value', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->selectBodies('d');
 
     expect($builder->build()->toCliString())->toContain('-pd');
 });
 
 it('uses default bodies if none selected', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     expect($builder->build()->toCliString())->toContain('-pd');
 });
 
 it('throws on invalid selectBodies string', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     expect(fn () => $builder->selectBodies('xxx'))
         ->toThrow(InvalidPlanetBodySelectionException::class);
@@ -103,7 +103,7 @@ it('throws on invalid selectBodies string', function () {
  */
 
 it('builds topocentric observer argument', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setLocation(17.038538, 51.107883, elevation: 123.4);
     $builder->setObserverPosition(ObserverPosition::TOPOCENTRIC);
 
@@ -112,7 +112,7 @@ it('builds topocentric observer argument', function () {
 });
 
 it('throws if planetocentric observer is used without planet', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setObserverPosition(ObserverPosition::PLANETOCENTRIC);
 
     expect(fn () => $builder->build())
@@ -120,7 +120,7 @@ it('throws if planetocentric observer is used without planet', function () {
 });
 
 it('builds planetocentric argument when planet provided', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setObserverPosition(ObserverPosition::PLANETOCENTRIC, PlanetBody::MARS);
 
     expect($builder->build()->toCliString())->toContain('-pc4');
@@ -130,20 +130,20 @@ it('builds planetocentric argument when planet provided', function () {
  * Sidereal
  */
 it('does not add sidereal argument by default', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     expect($builder->build()->toCliString())->not->toContain('-sid');
 });
 
 it('adds sidereal argument when requested', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->withSidereal(Sidereal::LAHIRI);
 
     expect($builder->build()->toCliString())->toContain('-sid1');
 });
 
 it('deduplicates eph options and keeps stable order', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     $builder->withEphOptions(
         EphOptions::TRUE_POSITIONS,
@@ -165,7 +165,7 @@ it('deduplicates eph options and keeps stable order', function () {
  * Stare:
  */
 it('adds custom properties without overriding default ones', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     $builder->withProperties([
         AstroProperties::LATITUDE_DECIMAL,
@@ -182,7 +182,7 @@ it('adds custom properties without overriding default ones', function () {
 });
 
 it('does not duplicate custom properties', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     $builder->withProperties([AstroProperties::LATITUDE_DECIMAL]);
     $builder->withProperties([AstroProperties::LATITUDE_DECIMAL]);
@@ -194,7 +194,7 @@ it('does not duplicate custom properties', function () {
 });
 
 it('adds house properties and sets housesystem', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
 
     $builder->withHouses(HouseSystems::PLACIDUS);
 
@@ -208,12 +208,12 @@ it('adds house properties and sets housesystem', function () {
 });
 
 it('allows any order of withProperties and withHouses without losing data', function () {
-    $builder1 = new SwissephCommandBuilder;
+    $builder1 = new PositionsBuilder;
     $builder1->withProperties(AstroProperties::LATITUDE_DECIMAL);
     $builder1->withHouses(HouseSystems::PLACIDUS);
     $props1 = $builder1->getProperties();
 
-    $builder2 = new SwissephCommandBuilder;
+    $builder2 = new PositionsBuilder;
     $builder2->withHouses(HouseSystems::PLACIDUS);
     $builder2->withProperties(AstroProperties::LATITUDE_DECIMAL);
     $props2 = $builder2->getProperties();
@@ -226,10 +226,10 @@ it('allows any order of withProperties and withHouses without losing data', func
 });
 
 it('does not carry properties between new builder instances', function () {
-    $b1 = new SwissephCommandBuilder;
+    $b1 = new PositionsBuilder;
     $b1->withProperties(AstroProperties::LATITUDE_DECIMAL);
 
-    $b2 = new SwissephCommandBuilder; // completely fresh
+    $b2 = new PositionsBuilder; // completely fresh
 
     expect($b2->getProperties())->not->toContain(AstroProperties::LATITUDE_DECIMAL);
 });
@@ -237,7 +237,7 @@ it('does not carry properties between new builder instances', function () {
 it('builds minimal valid swetest command syntax', function () {
     Carbon::setTestNow('2025-03-23 20:21:00');
 
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $array = $builder->build()->toProcessArray();
 
     expect($array)->toContain('-b23.03.2025');

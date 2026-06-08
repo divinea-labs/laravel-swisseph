@@ -1,17 +1,17 @@
 <?php
 
 use DivineaLabs\Swisseph\Enums\HouseSystems;
-use DivineaLabs\Swisseph\Support\Command\SwissephCommandBuilder;
-use DivineaLabs\Swisseph\Support\Parsing\SwissephParser;
+use DivineaLabs\Swisseph\Support\Positions\PositionsBuilder;
+use DivineaLabs\Swisseph\Support\Positions\PositionsParser;
 
 it('parses swetest output into planets and houses', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setLocation(17.038538, 51.107883, 'Wroclaw');
     $builder->withHouses(HouseSystems::KOCH);
 
     $lines = fixtureLines('swetest-koch.txt');
 
-    $parser = new SwissephParser;
+    $parser = new PositionsParser;
     $frame = $parser->parse($lines, $builder);
 
     expect($frame->place)->toBe('Wroclaw');
@@ -20,13 +20,13 @@ it('parses swetest output into planets and houses', function () {
 });
 
 it('parses planet properties according to -f sequence', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setLocation(17.038538, 51.107883, 'Wroclaw');
     $builder->withHouses(HouseSystems::KOCH);
 
     $lines = fixtureLines('swetest-koch.txt');
 
-    $parser = new SwissephParser;
+    $parser = new PositionsParser;
     $frame = $parser->parse($lines, $builder);
 
     $sun = $frame->planet_bodies[0];
@@ -45,13 +45,13 @@ it('parses planet properties according to -f sequence', function () {
 });
 
 it('parses house rows and omits house_number_decimal for house points', function () {
-    $builder = new SwissephCommandBuilder;
+    $builder = new PositionsBuilder;
     $builder->setLocation(17.038538, 51.107883, 'Wroclaw');
     $builder->withHouses(HouseSystems::KOCH);
 
     $lines = fixtureLines('swetest-koch.txt');
 
-    $parser = new SwissephParser;
+    $parser = new PositionsParser;
     $frame = $parser->parse($lines, $builder);
 
     $house1 = $frame->houses[0];

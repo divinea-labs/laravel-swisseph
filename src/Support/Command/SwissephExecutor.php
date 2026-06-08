@@ -9,13 +9,29 @@ use Symfony\Component\Process\Process;
 class SwissephExecutor
 {
     /**
-     * Execute the given Swisseph command and return the output lines.
-     *
+     * @param  string[]  $skipPrefixes  Lines starting with any of these (after trim) are dropped.
      * @return array<int, string>
      */
-    public function run(SwissephCommand $command): array
+    public function run(SwissephCommand $command, array $skipPrefixes = []): array
     {
-        $process = new Process($command->toProcessArray());
+        // swetest echoes the invoked command line (starting with the executable path)
+        // as the first stdout line in special-event modes. Auto-skip it so callers only
+        // need to declare mode-specific headers (e.g. 'geo. long'). The executable is an
+        // ABSOLUTE path in production, so matching on it is robust (a literal './' is not).
+        return $this->runRaw(
+            $command->toProcessArray(),
+            array_merge([$command->executable], $skipPrefixes),
+        );
+    }
+
+    /**
+     * @param  string[]  $processArray
+     * @param  string[]  $skipPrefixes
+     * @return array<int, string>
+     */
+    public function runRaw(array $processArray, array $skipPrefixes = []): array
+    {
+        $process = new Process($processArray);
         $process->setTimeout((float) config('swisseph.timeout', 10));
         $process->run();
 
@@ -34,7 +50,18 @@ class SwissephExecutor
 
         return array_values(array_filter(
             $lines,
-            static fn (string $line) => $line !== ''
+            static function (string $line) use ($skipPrefixes): bool {
+                if ($line === '') {
+                    return false;
+                }
+                foreach ($skipPrefixes as $prefix) {
+                    if (str_starts_with($line, $prefix)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         ));
     }
 }

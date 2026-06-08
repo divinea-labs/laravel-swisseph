@@ -1,0 +1,4 @@
+Sidereal Time  PPP01.01.2026 12:00:00 UT
+Delta T        PPP 71.0013120
+Ecl. Obl.      PPP 23.4381321
+Ayanamsha      PPP 24.2218573
