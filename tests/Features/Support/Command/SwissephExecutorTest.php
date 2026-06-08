@@ -1,25 +1,17 @@
 <?php
 
-use DivineaLabs\Swisseph\Data\SwissephCommand;
 use DivineaLabs\Swisseph\Support\Command\SwissephExecutor;
 
 it('strips the command-echo and geo header lines when skip prefixes are given', function () {
-    // Use `printf` as a fake binary that emits a swetest-like block.
-    $command = new SwissephCommand(
-        executable: 'printf',
-        arguments: [], // not used by toProcessArray below
-    );
-
-    // Build a command that prints an echo line, a geo header, and a data line.
-    $cmd = new SwissephCommand(
-        executable: '/bin/sh',
-        arguments: [],
-    );
-
+    // Use the PHP binary itself as a fake swetest that emits a swetest-like
+    // block (echo line + geo header + data line). PHP_BINARY is guaranteed to
+    // exist on every platform running the suite, unlike `/bin/sh`/`printf`
+    // which are absent on Windows. Symfony Process escapes the argument
+    // per-platform, so the single `-r` snippet works on both Unix and Windows.
     $executor = new SwissephExecutor;
 
     $lines = $executor->runRaw(
-        ['/bin/sh', '-c', "printf '%s\\n' './swetests -edir./ephe' 'geo. long 21.0, lat 52.2, alt 100.0' 'partial 12.08.2026'"],
+        [PHP_BINARY, '-r', 'echo "./swetests -edir./ephe\ngeo. long 21.0, lat 52.2, alt 100.0\npartial 12.08.2026\n";'],
         skipPrefixes: ['./swetests', 'geo. long'],
     );
 
