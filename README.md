@@ -187,15 +187,19 @@ Beyond the default planets, `positions()` can target catalog bodies and
 output-only computed values. Each selector replaces the default body set:
 
 ```php
+use DivineaLabs\Swisseph\Enums\Asteroid;
 use DivineaLabs\Swisseph\Enums\ComputedValue;
+use DivineaLabs\Swisseph\Enums\FixedStar;
 use DivineaLabs\Swisseph\Enums\Sidereal;
 use DivineaLabs\Swisseph\Facades\Swisseph;
 
-// Fixed star by catalog name
-$frame = Swisseph::positions()->selectFixedStar('Sirius')->get();
+// Fixed star by catalog name (FixedStar enum, or any raw name from sefstars.txt)
+$frame = Swisseph::positions()->selectFixedStar(FixedStar::SIRIUS)->get();
+$frame = Swisseph::positions()->selectFixedStar('Capella')->get(); // raw name still works
 
-// Asteroid by Minor Planet Center number (433 = Eros)
-$frame = Swisseph::positions()->selectAsteroid(433)->get();
+// Asteroid by MPC number (Asteroid enum, or any raw number from seasnam.txt)
+$frame = Swisseph::positions()->selectAsteroid(Asteroid::EROS)->get(); // 433
+$frame = Swisseph::positions()->selectAsteroid(1862)->get();          // raw number (Apollo)
 
 // Planetary moon by swetest moon number
 $frame = Swisseph::positions()->selectMoon(1)->get();
@@ -551,6 +555,7 @@ Compute **heliacal risings/settings and first/last visibility** via
 optical models are optional overrides.
 
 ```php
+use DivineaLabs\Swisseph\Enums\FixedStar;
 use DivineaLabs\Swisseph\Enums\HeliacalEventType;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Facades\Swisseph;
@@ -570,7 +575,7 @@ foreach ($events->all() as $event) {
 
 // Filter by event type, with custom models
 $risings = Swisseph::heliacal()
-    ->forStar('Sirius')
+    ->forStar(FixedStar::SIRIUS)
     ->at(17.038538, 51.107883)
     ->withAtmosphere(1013.25, 15.0, 40.0, 0.0)
     ->withObserver(45.0, 1.2)

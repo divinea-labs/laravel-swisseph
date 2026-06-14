@@ -1,8 +1,10 @@
 <?php
 
 use DivineaLabs\Swisseph\Data\PlanetBodyData;
+use DivineaLabs\Swisseph\Enums\Asteroid;
 use DivineaLabs\Swisseph\Enums\AstroProperties;
 use DivineaLabs\Swisseph\Enums\ComputedValue;
+use DivineaLabs\Swisseph\Enums\FixedStar;
 use DivineaLabs\Swisseph\Enums\PlanetBodySelection;
 use DivineaLabs\Swisseph\Enums\Sidereal;
 use DivineaLabs\Swisseph\Exceptions\InvalidPlanetBodySelectionException;
@@ -102,6 +104,24 @@ it('rejects a non-positive MPC number', function () {
 
     expect(fn () => $builder->selectAsteroid(0))
         ->toThrow(InvalidPlanetBodySelectionException::class);
+});
+
+it('accepts a FixedStar enum and emits the same args as the raw name', function () {
+    $fromEnum = (new PositionsBuilder)->selectFixedStar(FixedStar::SIRIUS)->build()->toCliString();
+    $fromString = (new PositionsBuilder)->selectFixedStar('Sirius')->build()->toCliString();
+
+    expect($fromEnum)->toContain('-pf');
+    expect($fromEnum)->toContain('-xfSirius');
+    expect($fromEnum)->toBe($fromString);
+});
+
+it('accepts an Asteroid enum and emits the same args as the raw MPC number', function () {
+    $fromEnum = (new PositionsBuilder)->selectAsteroid(Asteroid::EROS)->build()->toCliString();
+    $fromInt = (new PositionsBuilder)->selectAsteroid(433)->build()->toCliString();
+
+    expect($fromEnum)->toContain('-ps');
+    expect($fromEnum)->toContain('-xs433');
+    expect($fromEnum)->toBe($fromInt);
 });
 
 it('builds a computed-value selector onto -p', function () {

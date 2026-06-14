@@ -7,8 +7,10 @@ namespace DivineaLabs\Swisseph\Support\Positions;
 use DivineaLabs\Swisseph\Data\AstroTimeFrame;
 use DivineaLabs\Swisseph\Data\AstroTimeSeries;
 use DivineaLabs\Swisseph\Data\SwissephCommand;
+use DivineaLabs\Swisseph\Enums\Asteroid;
 use DivineaLabs\Swisseph\Enums\AstroProperties;
 use DivineaLabs\Swisseph\Enums\ComputedValue;
+use DivineaLabs\Swisseph\Enums\FixedStar;
 use DivineaLabs\Swisseph\Enums\HouseSystems;
 use DivineaLabs\Swisseph\Enums\ObserverPosition;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
@@ -136,13 +138,15 @@ class PositionsBuilder
     /**
      * Select a fixed star by catalog name (-pf -xf<name>).
      *
-     * The result row's name column carries the catalog name (e.g. "Sirius,alCMa").
+     * Accepts a FixedStar enum for the curated set, or any raw catalog name
+     * string from ephe/sefstars.txt. The result row's name column carries the
+     * catalog name (e.g. "Sirius,alCMa").
      *
      * @return $this
      */
-    public function selectFixedStar(string $name): self
+    public function selectFixedStar(FixedStar|string $name): self
     {
-        $name = trim($name);
+        $name = $name instanceof FixedStar ? $name->value : trim($name);
 
         if ($name === '') {
             throw InvalidPlanetBodySelectionException::invalidValue($name);
@@ -179,10 +183,15 @@ class PositionsBuilder
     /**
      * Select an asteroid by its MPC number (-ps -xs<number>).
      *
+     * Accepts an Asteroid enum for the curated set, or any raw MPC number from
+     * ephe/seasnam.txt.
+     *
      * @return $this
      */
-    public function selectAsteroid(int $mpcNumber): self
+    public function selectAsteroid(Asteroid|int $mpcNumber): self
     {
+        $mpcNumber = $mpcNumber instanceof Asteroid ? $mpcNumber->value : $mpcNumber;
+
         if ($mpcNumber <= 0) {
             throw InvalidPlanetBodySelectionException::invalidValue((string) $mpcNumber);
         }
