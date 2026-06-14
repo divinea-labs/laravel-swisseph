@@ -14,6 +14,40 @@ Conventions:
 
 ---
 
+## Asteroid (int)
+
+Namespace: `DivineaLabs\Swisseph\Enums\Asteroid`  
+Purpose: Curated set of commonly-used named asteroids and TNOs. Value = MPC number (the int passed after `-xs`). Ceres/Pallas/Juno/Vesta/Chiron/Pholus are not here — they have Swiss Ephemeris constants and live in `PlanetBody`. Any other MPC number from `ephe/seasnam.txt` may be passed to `selectAsteroid()` as a raw int.
+
+| Case | Value (MPC) | Name (`getName()`) |
+|---|---:|---|
+| EROS | 433 | Eros |
+| PSYCHE | 16 | Psyche |
+| SAPPHO | 80 | Sappho |
+| AMOR | 1221 | Amor |
+| LILITH | 1181 | Lilith |
+| HYGIEA | 10 | Hygiea |
+| APOLLO | 1862 | Apollo |
+| ICARUS | 1566 | Icarus |
+| ATEN | 2062 | Aten |
+| CRUITHNE | 3753 | Cruithne |
+| POSEIDON | 4341 | Poseidon |
+| QUAOAR | 50000 | Quaoar |
+| HIDALGO | 944 | Hidalgo |
+| NESSUS | 7066 | Nessus |
+| HEKATE | 100 | Hekate |
+| NEMESIS | 128 | Nemesis |
+| FORTUNA | 19 | Fortuna |
+| URANIA | 30 | Urania |
+| HEKTOR | 624 | Hektor |
+| CHAOS | 19521 | Chaos |
+| SEDNA | 90377 | Sedna |
+| ERIS | 136199 | Eris |
+| ORCUS | 90482 | Orcus |
+| VARUNA | 20000 | Varuna |
+
+---
+
 ## AstroProperties (string)
 
 Namespace: `DivineaLabs\Swisseph\Enums\AstroProperties`  
@@ -79,40 +113,6 @@ Columns:
 Notes:
 - `SPEED_ALL_VALUES_DECIMAL_FMT (ss)` and some commented tokens are marked `TO-CHECK` in code.
 - There are a few naming inconsistencies preserved from code (e.g. `LONGITUDE_DEGREE`, `nodes__osculating_longitude_decimal`).
-
----
-
-## Asteroid (int)
-
-Namespace: `DivineaLabs\Swisseph\Enums\Asteroid`  
-Purpose: Curated set of commonly-used named asteroids and TNOs. Value = MPC number (the int passed after `-xs`). Ceres/Pallas/Juno/Vesta/Chiron/Pholus are not here — they have Swiss Ephemeris constants and live in `PlanetBody`. Any other MPC number from `ephe/seasnam.txt` may be passed to `selectAsteroid()` as a raw int.
-
-| Case | Value (MPC) | Name (`getName()`) |
-|---|---:|---|
-| EROS | 433 | Eros |
-| PSYCHE | 16 | Psyche |
-| SAPPHO | 80 | Sappho |
-| AMOR | 1221 | Amor |
-| LILITH | 1181 | Lilith |
-| HYGIEA | 10 | Hygiea |
-| APOLLO | 1862 | Apollo |
-| ICARUS | 1566 | Icarus |
-| ATEN | 2062 | Aten |
-| CRUITHNE | 3753 | Cruithne |
-| POSEIDON | 4341 | Poseidon |
-| QUAOAR | 50000 | Quaoar |
-| HIDALGO | 944 | Hidalgo |
-| NESSUS | 7066 | Nessus |
-| HEKATE | 100 | Hekate |
-| NEMESIS | 128 | Nemesis |
-| FORTUNA | 19 | Fortuna |
-| URANIA | 30 | Urania |
-| HEKTOR | 624 | Hektor |
-| CHAOS | 19521 | Chaos |
-| SEDNA | 90377 | Sedna |
-| ERIS | 136199 | Eris |
-| ORCUS | 90482 | Orcus |
-| VARUNA | 20000 | Varuna |
 
 ---
 
