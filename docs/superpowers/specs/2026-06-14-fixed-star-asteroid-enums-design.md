@@ -174,7 +174,7 @@ RIGEL             Rigel             0.13    RASALHAGUE      Rasalhague       2.0
 PROCYON           Procyon           0.37    DENEBOLA        Denebola         2.13
 BETELGEUSE        Betelgeuse        0.42    MENKAR          Menkar           2.53
 ACHERNAR          Achernar          0.46    ZUBENELGENUBI   Zubenelgenubi    2.75
-ALTAIR            Altair            0.76    ZUBENESCHAMALI  Zubeneschamali   2.61
+ALTAIR            Altair            0.76    ZUBENESHAMALI   Zubeneshamali    2.62
 ACRUX             Acrux             0.81    VINDEMIATRIX    Vindemiatrix     2.79
 ALDEBARAN         Aldebaran         0.86    MARKAB          Markab           2.48
 ANTARES           Antares           0.91    SCHEAT          Scheat           2.42
