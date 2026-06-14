@@ -141,36 +141,6 @@ Purpose: Ephemeris configuration flags and options (mapped to swetest params)
 
 ---
 
-## House (string)
-
-Namespace: `DivineaLabs\Swisseph\Enums\House`  
-Purpose: House points / angles / additional points returned by house computations
-
-| Case | Value | Name (`getName()`) |
-|---|---:|---|
-| HOUSE_1 | `1` | House 1 |
-| HOUSE_2 | `2` | House 2 |
-| HOUSE_3 | `3` | House 3 |
-| HOUSE_4 | `4` | House 4 |
-| HOUSE_5 | `5` | House 5 |
-| HOUSE_6 | `6` | House 6 |
-| HOUSE_7 | `7` | House 7 |
-| HOUSE_8 | `8` | House 8 |
-| HOUSE_9 | `9` | House 9 |
-| HOUSE_10 | `10` | House 10 |
-| HOUSE_11 | `11` | House 11 |
-| HOUSE_12 | `12` | House 12 |
-| ASCENDANT | `13` | Ascendant |
-| MC | `14` | Midheaven |
-| ARMC | `15` | ARMC |
-| VERTEX | `16` | Vertex |
-| EQUAT_ASC | `17` | Equatorial Ascendant |
-| CO_ASC_KOCH | `18` | CO-Ascendant" (W. Koch) |
-| CO_ASC_MUNKASEY | `19` | CO-Ascendant" (M. Munkasey) |
-| POLAR_ASC_MUNKASEY | `20` | Polar Ascendant" (M. Munkasey) |
-
----
-
 ## FixedStar (string)
 
 Namespace: `DivineaLabs\Swisseph\Enums\FixedStar`  
@@ -234,6 +204,36 @@ Purpose: Curated set of commonly-used fixed stars. Value = Swiss Ephemeris catal
 Swisseph::positions()->selectFixedStar('Capella')->get();   // raw catalog name
 Swisseph::positions()->selectAsteroid(1862)->get();         // raw MPC number (Apollo)
 ```
+
+---
+
+## House (string)
+
+Namespace: `DivineaLabs\Swisseph\Enums\House`  
+Purpose: House points / angles / additional points returned by house computations
+
+| Case | Value | Name (`getName()`) |
+|---|---:|---|
+| HOUSE_1 | `1` | House 1 |
+| HOUSE_2 | `2` | House 2 |
+| HOUSE_3 | `3` | House 3 |
+| HOUSE_4 | `4` | House 4 |
+| HOUSE_5 | `5` | House 5 |
+| HOUSE_6 | `6` | House 6 |
+| HOUSE_7 | `7` | House 7 |
+| HOUSE_8 | `8` | House 8 |
+| HOUSE_9 | `9` | House 9 |
+| HOUSE_10 | `10` | House 10 |
+| HOUSE_11 | `11` | House 11 |
+| HOUSE_12 | `12` | House 12 |
+| ASCENDANT | `13` | Ascendant |
+| MC | `14` | Midheaven |
+| ARMC | `15` | ARMC |
+| VERTEX | `16` | Vertex |
+| EQUAT_ASC | `17` | Equatorial Ascendant |
+| CO_ASC_KOCH | `18` | CO-Ascendant" (W. Koch) |
+| CO_ASC_MUNKASEY | `19` | CO-Ascendant" (M. Munkasey) |
+| POLAR_ASC_MUNKASEY | `20` | Polar Ascendant" (M. Munkasey) |
 
 ---
 
