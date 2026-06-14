@@ -82,6 +82,40 @@ Notes:
 
 ---
 
+## Asteroid (int)
+
+Namespace: `DivineaLabs\Swisseph\Enums\Asteroid`  
+Purpose: Curated set of commonly-used named asteroids and TNOs. Value = MPC number (the int passed after `-xs`). Ceres/Pallas/Juno/Vesta/Chiron/Pholus are not here — they have Swiss Ephemeris constants and live in `PlanetBody`. Any other MPC number from `ephe/seasnam.txt` may be passed to `selectAsteroid()` as a raw int.
+
+| Case | Value (MPC) | Name (`getName()`) |
+|---|---:|---|
+| EROS | 433 | Eros |
+| PSYCHE | 16 | Psyche |
+| SAPPHO | 80 | Sappho |
+| AMOR | 1221 | Amor |
+| LILITH | 1181 | Lilith |
+| HYGIEA | 10 | Hygiea |
+| APOLLO | 1862 | Apollo |
+| ICARUS | 1566 | Icarus |
+| ATEN | 2062 | Aten |
+| CRUITHNE | 3753 | Cruithne |
+| POSEIDON | 4341 | Poseidon |
+| QUAOAR | 50000 | Quaoar |
+| HIDALGO | 944 | Hidalgo |
+| NESSUS | 7066 | Nessus |
+| HEKATE | 100 | Hekate |
+| NEMESIS | 128 | Nemesis |
+| FORTUNA | 19 | Fortuna |
+| URANIA | 30 | Urania |
+| HEKTOR | 624 | Hektor |
+| CHAOS | 19521 | Chaos |
+| SEDNA | 90377 | Sedna |
+| ERIS | 136199 | Eris |
+| ORCUS | 90482 | Orcus |
+| VARUNA | 20000 | Varuna |
+
+---
+
 ## EphOptions (string)
 
 Namespace: `DivineaLabs\Swisseph\Enums\EphOptions`  
@@ -134,6 +168,72 @@ Purpose: House points / angles / additional points returned by house computation
 | CO_ASC_KOCH | `18` | CO-Ascendant" (W. Koch) |
 | CO_ASC_MUNKASEY | `19` | CO-Ascendant" (M. Munkasey) |
 | POLAR_ASC_MUNKASEY | `20` | Polar Ascendant" (M. Munkasey) |
+
+---
+
+## FixedStar (string)
+
+Namespace: `DivineaLabs\Swisseph\Enums\FixedStar`  
+Purpose: Curated set of commonly-used fixed stars. Value = Swiss Ephemeris catalog name (the string passed after `-xf`). Any other star from `ephe/sefstars.txt` may still be passed to the selectors as a raw string.
+
+| Case | Value | Name (`getName()`) | Mag |
+|---|---|---|---:|
+| SIRIUS | Sirius | Sirius | -1.46 |
+| CANOPUS | Canopus | Canopus | -0.74 |
+| RIGIL_KENTAURUS | Bungula | Rigil Kentaurus | -0.10 |
+| ARCTURUS | Arcturus | Arcturus | -0.05 |
+| VEGA | Vega | Vega | 0.03 |
+| CAPELLA | Capella | Capella | 0.08 |
+| RIGEL | Rigel | Rigel | 0.13 |
+| PROCYON | Procyon | Procyon | 0.37 |
+| BETELGEUSE | Betelgeuse | Betelgeuse | 0.42 |
+| ACHERNAR | Achernar | Achernar | 0.46 |
+| ALTAIR | Altair | Altair | 0.76 |
+| ACRUX | Acrux | Acrux | 0.81 |
+| ALDEBARAN | Aldebaran | Aldebaran | 0.86 |
+| ANTARES | Antares | Antares | 0.91 |
+| SPICA | Spica | Spica | 0.97 |
+| POLLUX | Pollux | Pollux | 1.14 |
+| FOMALHAUT | Fomalhaut | Fomalhaut | 1.16 |
+| DENEB | Deneb | Deneb | 1.25 |
+| REGULUS | Regulus | Regulus | 1.40 |
+| CASTOR | Castor | Castor | 1.58 |
+| BELLATRIX | Bellatrix | Bellatrix | 1.64 |
+| ALGOL | Algol | Algol | 2.12 |
+| ALPHECCA | Alphecca | Alphecca | 2.24 |
+| ALCYONE | Alcyone | Alcyone | 2.87 |
+| POLARIS | Polaris | Polaris | 2.02 |
+| ALPHARD | Alphard | Alphard | 1.97 |
+| HAMAL | Hamal | Hamal | 2.01 |
+| ALPHERATZ | Alpheratz | Alpheratz | 2.06 |
+| RASALHAGUE | Rasalhague | Rasalhague | 2.07 |
+| DENEBOLA | Denebola | Denebola | 2.13 |
+| MENKAR | Menkar | Menkar | 2.53 |
+| ZUBENELGENUBI | Zubenelgenubi | Zubenelgenubi | 2.75 |
+| ZUBENESHAMALI | Zubeneshamali | Zubeneshamali | 2.62 |
+| VINDEMIATRIX | Vindemiatrix | Vindemiatrix | 2.79 |
+| MARKAB | Markab | Markab | 2.48 |
+| SCHEAT | Scheat | Scheat | 2.42 |
+| ALGENIB | Algenib | Algenib | 2.84 |
+| SADALMELEK | Sadalmelek | Sadalmelek | 2.94 |
+| MIRFAK | Mirfak | Mirfak | 1.79 |
+| WEZEN | Wezen | Wezen | 1.84 |
+| ALNILAM | Alnilam | Alnilam | 1.69 |
+| MIRZAM | Mirzam | Mirzam | 1.97 |
+| MIRA | Mira | Mira | var. |
+| GALACTIC_CENTER | Galactic Center | Galactic Center | — |
+
+### Bodies outside the curated set
+
+`FixedStar` and `Asteroid` cover the common cases only. For anything else, pass the raw value — the selectors accept it directly:
+
+- Fixed stars: any traditional name, Bayer/Flamsteed designation (e.g. `,alTau`), or line number from `ephe/sefstars.txt` (shipped with the Swiss Ephemeris data). Name matching is case-insensitive and whitespace is ignored.
+- Asteroids: any MPC number from `ephe/seasnam.txt`.
+
+```php
+Swisseph::positions()->selectFixedStar('Capella')->get();   // raw catalog name
+Swisseph::positions()->selectAsteroid(1862)->get();         // raw MPC number (Apollo)
+```
 
 ---
 
