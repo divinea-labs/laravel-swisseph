@@ -2,6 +2,37 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.3.1 — FixedStar & Asteroid convenience enums - 2026-06-14
+
+Description:
+Two new enums make working with fixed stars and asteroids easier — readable,
+auto-completable constants instead of "magic" strings and catalog numbers.
+Fully additive and backward-compatible release.
+
+### Added
+
+- **`FixedStar` enum** (string-backed, 44 curated stars) — e.g.
+  `FixedStar::SIRIUS`, `FixedStar::VEGA`, `FixedStar::ARCTURUS`. Values map to the
+  Swiss Ephemeris catalog names (e.g. `RIGIL_KENTAURUS => 'Bungula'`).
+- **`Asteroid` enum** (int-backed, 24 named asteroids) — e.g.
+  `Asteroid::EROS` (433), `Asteroid::PSYCHE` (16), `Asteroid::LILITH` (1181).
+- Selectors now accept the enum **alongside** the existing raw string/int:
+  - `PositionsBuilder::selectFixedStar()` and `selectAsteroid()`
+  - `OccultationsBuilder` and `HeliacalBuilder` (`forStar`)
+  
+
+### Changed
+
+- `selectAsteroid(433)` can now be written as `selectAsteroid(Asteroid::EROS)`.
+- `selectFixedStar('Sirius')` can now be written as `selectFixedStar(FixedStar::SIRIUS)`.
+- Raw strings/ints still work — for stars/asteroids outside the curated list
+  (the "long tail"), pass the value directly, just as before.
+
+### Docs
+
+- New `docs/enums.md` chapter covering both enums and raw input.
+- README updated.
+
 ## [Unreleased] / 0.3.0
 
 **BREAKING:** Entry points restructured into sub-builders — use `Swisseph::positions()` / `Swisseph::risings()` instead of the flat fluent API.
@@ -16,9 +47,10 @@ Swisseph::setDateTime(...)->setLocation(...)->getSunEvents();
 // After (0.3.0)
 Swisseph::positions()->setLocation(...)->setDateTime(...)->get();
 Swisseph::risings()->setDateTime(...)->setLocation(...)->getSunEvents();
-```
 
+```
 Internal changes:
+
 - Shared `ResolvesSwissephEnvironment` trait (executable/ephe-dir/date/time/eph-options).
 - `SwissephCommandBuilder` renamed to `PositionsBuilder` (`src/Support/Positions/`).
 - `SwissephParser` renamed to `PositionsParser` (`src/Support/Positions/`).
