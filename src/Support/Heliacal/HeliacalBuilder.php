@@ -7,6 +7,7 @@ namespace DivineaLabs\Swisseph\Support\Heliacal;
 use Carbon\Carbon;
 use DivineaLabs\Swisseph\Data\HeliacalCollection;
 use DivineaLabs\Swisseph\Data\SwissephCommand;
+use DivineaLabs\Swisseph\Enums\FixedStar;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Exceptions\HeliacalGeoPositionNotSetException;
 use DivineaLabs\Swisseph\Support\Command\SwissephExecutor;
@@ -54,9 +55,9 @@ final class HeliacalBuilder
         return $this;
     }
 
-    public function forStar(string $name): self
+    public function forStar(FixedStar|string $name): self
     {
-        $this->star = $name;
+        $this->star = $name instanceof FixedStar ? $name->value : $name;
         $this->body = null;
 
         return $this;

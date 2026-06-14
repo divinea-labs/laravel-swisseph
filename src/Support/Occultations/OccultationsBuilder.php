@@ -7,6 +7,7 @@ namespace DivineaLabs\Swisseph\Support\Occultations;
 use Carbon\Carbon;
 use DivineaLabs\Swisseph\Data\OccultationCollection;
 use DivineaLabs\Swisseph\Data\SwissephCommand;
+use DivineaLabs\Swisseph\Enums\FixedStar;
 use DivineaLabs\Swisseph\Enums\OccultationScope;
 use DivineaLabs\Swisseph\Enums\PlanetBody;
 use DivineaLabs\Swisseph\Exceptions\OccultationTargetNotSetException;
@@ -47,9 +48,9 @@ final class OccultationsBuilder
         $this->bootSwissephEnvironment();
     }
 
-    public function forStar(string $name): self
+    public function forStar(FixedStar|string $name): self
     {
-        $this->star = $name;
+        $this->star = $name instanceof FixedStar ? $name->value : $name;
         $this->body = null;
 
         return $this;
