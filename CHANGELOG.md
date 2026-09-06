@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## Restore phpdocumentor/reflection 6.x compatibility - 2026-09-06
+
+Dependency fix. phpdocumentor/reflection was tightened to ^7.0 in #6, which blocked apps on the 6.x line from installing v0.3.1 and v0.3.2 — including the rise/set parser fix — with composer silently declining the upgrade rather than reporting the conflict. The constraint is ^6.1 || ^7.0 again, preserving the PHP 8.4 floor. No API change.
+
 ## v0.3.2 - Rise/set single-digit day fix - 2026-09-06
 
 Bugfix release. RiseParser silently discarded rise/set lines for days 1–9 of every month, because swetest space-pads the day-of-month (6.09.2026) while the parser's guard required two digits. Strict-mode callers saw RiseSetNotFoundException on roughly a third of all dates. No API change; upgrading is a drop-in.
@@ -51,6 +55,7 @@ Swisseph::setDateTime(...)->setLocation(...)->getSunEvents();
 // After (0.3.0)
 Swisseph::positions()->setLocation(...)->setDateTime(...)->get();
 Swisseph::risings()->setDateTime(...)->setLocation(...)->getSunEvents();
+
 
 
 ```
