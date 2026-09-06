@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.3.2 - Rise/set single-digit day fix - 2026-09-06
+
+Bugfix release. RiseParser silently discarded rise/set lines for days 1–9 of every month, because swetest space-pads the day-of-month (6.09.2026) while the parser's guard required two digits. Strict-mode callers saw RiseSetNotFoundException on roughly a third of all dates. No API change; upgrading is a drop-in.
+
 ## v0.3.1 — FixedStar & Asteroid convenience enums - 2026-06-14
 
 Description:
@@ -47,6 +51,7 @@ Swisseph::setDateTime(...)->setLocation(...)->getSunEvents();
 // After (0.3.0)
 Swisseph::positions()->setLocation(...)->setDateTime(...)->get();
 Swisseph::risings()->setDateTime(...)->setLocation(...)->getSunEvents();
+
 
 ```
 Internal changes:
