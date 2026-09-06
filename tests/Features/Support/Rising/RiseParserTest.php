@@ -121,6 +121,39 @@ it('skips lines with invalid date format in tokens[1]', function () {
     expect($result->events)->toBeEmpty();
 });
 
+// ---------------------------------------------------------------------------
+// Single-digit day-of-month — swetest space-pads the day, it does NOT zero-pad it
+// ---------------------------------------------------------------------------
+
+it('parses a rise/set line whose day-of-month is a single digit', function () {
+    // Verbatim swetest output shape: "6.09.2026", not "06.09.2026".
+    $result = (new RiseParser)->parse(
+        ["rise      6.09.2026\t  04:16:13.0    set       6.09.2026\t  17:23:11.6    dt =  13:06:58.6"],
+        makeModeAQuery(utcDate: '2026-09-06')
+    );
+
+    expect($result->events)->toHaveCount(2);
+    expect($result->riseFound)->toBeTrue();
+    expect($result->setFound)->toBeTrue();
+    expect($result->events[0]->utcAt->toIso8601String())->toBe('2026-09-06T04:16:13+00:00');
+    expect($result->events[1]->utcAt->toIso8601String())->toBe('2026-09-06T17:23:11+00:00');
+});
+
+it('parses the first-of-month line that follows a two-digit month end', function () {
+    // A window starting on the 31st spills into "1.11.2026" — the day the caller
+    // needs when it asks for the NEXT sunrise after a month-end date.
+    $lines = [
+        'geo. long 17.038500, lat 51.107800, alt 0.000000',
+        "rise     31.10.2026\t  05:46:07.6    set      31.10.2026\t  15:24:04.2    dt =  09:37:56.6",
+        "rise      1.11.2026\t  05:47:52.6    set       1.11.2026\t  15:22:15.7    dt =  09:34:23.1",
+    ];
+
+    $result = (new RiseParser)->parse($lines, makeModeAQuery(utcDate: '2026-11-01'));
+
+    expect($result->events)->toHaveCount(2);
+    expect($result->events[0]->utcAt->toIso8601String())->toBe('2026-11-01T05:47:52+00:00');
+});
+
 it('skips lines with invalid time format in tokens[2]', function () {
     $result = (new RiseParser)->parse(
         ['rise     14.02.2026       6:10:32.9    set      14.02.2026       16:02:08.3    dt =  09:51:35.4'],

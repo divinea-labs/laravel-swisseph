@@ -21,7 +21,10 @@ final class RiseParser
     {
         $events = [];
 
-        $datePattern = '/^\d{2}\.\d{2}\.\d{4}$/';
+        // swetest space-pads the day-of-month but zero-pads the month, so days 1-9
+        // arrive as "6.09.2026" — one digit. Requiring \d{2} here silently dropped
+        // every such line, which the caller then read as "no rise/set on this date".
+        $datePattern = '/^\d{1,2}\.\d{2}\.\d{4}$/';
         $timePattern = '/^\d{2}:\d{2}:\d{2}(\.\d+)?$/';
 
         foreach ($lines as $line) {
