@@ -2,6 +2,28 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.3.4 — PlanetBody slugs - 2026-09-08
+
+Additive release. Drop-in upgrade — `^0.3.0` already covers it, so no constraint needs to move.
+
+### Why
+
+`PlanetBody` is backed by the raw Swiss Ephemeris integer, and `getName()` returns a label written for people: `Mean Apogee (Lilith)`, `Neptune (Leverrier)`, `Selena / White Moon`. There was no stable string identifier in between, so every consumer serializing a body to JSON had to invent one. At least one of them didn't, and published `"Mean Apogee (Lilith)"` as a JSON object key — a key with a space and parentheses in it, which no TypeScript consumer can express without quoting the whole thing.
+
+### What's new
+
+**`PlanetBody::slug(): string`** — a wire-safe identifier for all 43 cases:
+
+```php
+PlanetBody::SUN->slug();        // 'sun'
+PlanetBody::MEAN_APOG->slug();  // 'mean_apogee'
+PlanetBody::TRUE_NODE->slug();  // 'true_node'
+
+Every slug matches ^[a-z][a-z0-9_]*$ and is unique across the enum. Case-name abbreviations are expanded rather than carried over — MEAN_APOG becomes mean_apogee and INTP_PERG becomes interpolated_perigee — because a slug is a permanent public contract and an abbreviation in one is a wart you cannot remove later.
+
+PlanetBody::fromName(string $name): ?self — the inverse of getName(), for callers that hold a label and need the case back. Returns null for a name belonging to no body, so an unknown label is something you can detect rather than something that silently becomes a wrong body.
+
+```
 ## Restore phpdocumentor/reflection 6.x compatibility - 2026-09-06
 
 Dependency fix. phpdocumentor/reflection was tightened to ^7.0 in #6, which blocked apps on the 6.x line from installing v0.3.1 and v0.3.2 — including the rise/set parser fix — with composer silently declining the upgrade rather than reporting the conflict. The constraint is ^6.1 || ^7.0 again, preserving the PHP 8.4 floor. No API change.
@@ -55,6 +77,7 @@ Swisseph::setDateTime(...)->setLocation(...)->getSunEvents();
 // After (0.3.0)
 Swisseph::positions()->setLocation(...)->setDateTime(...)->get();
 Swisseph::risings()->setDateTime(...)->setLocation(...)->getSunEvents();
+
 
 
 
