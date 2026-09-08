@@ -101,6 +101,74 @@ enum PlanetBody: int
         };
     }
 
+    /**
+     * Stable, wire-safe identifier for this body.
+     *
+     * getName() returns a label for humans — "Mean Apogee (Lilith)" — which cannot
+     * serve as a JSON key or a TypeScript record key without quoting. Consumers were
+     * left to invent their own identifier; this is the canonical one.
+     */
+    public function slug(): string
+    {
+        return match ($this) {
+            self::ECL_NUT => 'ecliptic_nutation',
+            self::SUN => 'sun',
+            self::MOON => 'moon',
+            self::MERCURY => 'mercury',
+            self::VENUS => 'venus',
+            self::MARS => 'mars',
+            self::JUPITER => 'jupiter',
+            self::SATURN => 'saturn',
+            self::URANUS => 'uranus',
+            self::NEPTUNE => 'neptune',
+            self::PLUTO => 'pluto',
+            self::MEAN_NODE => 'mean_node',
+            self::TRUE_NODE => 'true_node',
+            self::MEAN_APOG => 'mean_apogee',
+            self::OSCU_APOG => 'osculating_apogee',
+            self::EARTH => 'earth',
+            self::CHIRON => 'chiron',
+            self::PHOLUS => 'pholus',
+            self::CERES => 'ceres',
+            self::PALLAS => 'pallas',
+            self::JUNO => 'juno',
+            self::VESTA => 'vesta',
+            self::INTP_APOG => 'interpolated_apogee',
+            self::INTP_PERG => 'interpolated_perigee',
+            self::NPLANETS => 'planet_count',
+            self::CUPIDO => 'cupido',
+            self::HADES => 'hades',
+            self::ZEUS => 'zeus',
+            self::KRONOS => 'kronos',
+            self::APOLLON => 'apollon',
+            self::ADMETOS => 'admetos',
+            self::VULKANUS => 'vulkanus',
+            self::POSEIDON => 'poseidon',
+            self::ISIS => 'isis',
+            self::NIBIRU => 'nibiru',
+            self::HARRINGTON => 'harrington',
+            self::NEPTUNE_LEVERRIER => 'neptune_leverrier',
+            self::NEPTUNE_ADAMS => 'neptune_adams',
+            self::PLUTO_LOWELL => 'pluto_lowell',
+            self::PLUTO_PICKERING => 'pluto_pickering',
+            self::VULCAN => 'vulcan',
+            self::SELENA => 'selena',
+            self::WALDEMATH => 'waldemath',
+        };
+    }
+
+    /** Inverse of getName(). Null when the label belongs to no body. */
+    public static function fromName(string $name): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->getName() === $name) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
     public function getAdditionalInformation(): ?string
     {
         return match ($this) {
