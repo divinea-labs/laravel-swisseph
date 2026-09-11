@@ -45,9 +45,67 @@ enum House: string
             self::ARMC => 'ARMC',
             self::VERTEX => 'Vertex',
             self::EQUAT_ASC => 'Equatorial Ascendant',
-            self::CO_ASC_KOCH => 'CO-Ascendant" (W. Koch)',
-            self::CO_ASC_MUNKASEY => 'CO-Ascendant" (M. Munkasey)',
-            self::POLAR_ASC_MUNKASEY => 'Polar Ascendant" (M. Munkasey)'
+            self::CO_ASC_KOCH => 'CO-Ascendant (W. Koch)',
+            self::CO_ASC_MUNKASEY => 'CO-Ascendant (M. Munkasey)',
+            self::POLAR_ASC_MUNKASEY => 'Polar Ascendant (M. Munkasey)'
         };
+    }
+
+    /**
+     * The house number of the twelve cusps; null for the eight points that share this
+     * enum (Ascendant, MC, ARMC, Vertex, ...). Swiss Ephemeris numbers those points
+     * 13..20 in the same column as the cusps, so the raw backing value is not a house
+     * number - ask this method instead.
+     */
+    public function cuspNumber(): ?int
+    {
+        $number = (int) $this->value;
+
+        return $number <= 12 ? $number : null;
+    }
+
+    /**
+     * A wire-safe identifier, stable across releases. Cusps are `house_1`..`house_12`;
+     * the points use the names consumers already publish.
+     */
+    public function slug(): string
+    {
+        return match ($this) {
+            self::HOUSE_1 => 'house_1',
+            self::HOUSE_2 => 'house_2',
+            self::HOUSE_3 => 'house_3',
+            self::HOUSE_4 => 'house_4',
+            self::HOUSE_5 => 'house_5',
+            self::HOUSE_6 => 'house_6',
+            self::HOUSE_7 => 'house_7',
+            self::HOUSE_8 => 'house_8',
+            self::HOUSE_9 => 'house_9',
+            self::HOUSE_10 => 'house_10',
+            self::HOUSE_11 => 'house_11',
+            self::HOUSE_12 => 'house_12',
+            self::ASCENDANT => 'ascendant',
+            self::MC => 'midheaven',
+            self::ARMC => 'armc',
+            self::VERTEX => 'vertex',
+            self::EQUAT_ASC => 'equatorial_ascendant',
+            self::CO_ASC_KOCH => 'co_ascendant_koch',
+            self::CO_ASC_MUNKASEY => 'co_ascendant_munkasey',
+            self::POLAR_ASC_MUNKASEY => 'polar_ascendant',
+        };
+    }
+
+    /**
+     * The inverse of getName(). Null for a name belonging to no house or point, so an
+     * unknown label is detectable rather than silently becoming a wrong row.
+     */
+    public static function fromName(string $name): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->getName() === $name) {
+                return $case;
+            }
+        }
+
+        return null;
     }
 }
