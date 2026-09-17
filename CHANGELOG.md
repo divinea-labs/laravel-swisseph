@@ -2,6 +2,23 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
+## v0.3.5 — Planet descriptions are text again - 2026-09-17
+
+`PlanetBody::getAdditionalInformation()` wrapped five descriptions (Harrington, Nibiru, Vulcan, Selena, Waldemath) in backticks. In PHP a backtick is not a string delimiter but the shell-execution operator, the same as `shell_exec()`. Calling the method didn't return the description: it tried to run the prose as a shell command (`This is another attempt to predict…`) and returned that command's output, which is `null`. So no description ever reached a caller. PHP 8.5 also warns about the operator, which is where the deprecation notice in consuming test suites came from.
+
+### What's changed
+
+**`PlanetBody::getAdditionalInformation()` returns the text.** Harrington, Nibiru, Vulcan and Waldemath now return their descriptions as ordinary single-line strings. The wording is unchanged; only the whitespace left by the source indentation is collapsed.
+
+```php
+PlanetBody::HARRINGTON->getAdditionalInformation();
+// "This is another attempt to predict Planet X's orbit and position from perturbations…"
+
+Selena returns null. Its entry was a verbatim copy of Vulcan's description, so it described the wrong body. No description is better than a wrong one. In practice nothing changes here, since the method already returned null for it.
+
+The backtick operator is banned from src/. A new arch test scans the package's PHP tokens and fails if the operator appears anywhere in the source.
+
+```
 ## v0.3.5 — House identity - 2026-09-11
 
 ### Why
@@ -16,6 +33,7 @@ Swiss Ephemeris writes the twelve house cusps and eight special points in one co
 House::HOUSE_7->cuspNumber();    // 7
 House::ASCENDANT->cuspNumber();  // null
 
+
 ```
 **`House::slug(): string`** — a wire-safe identifier for all 20 cases. Cusps are `house_1`…`house_12`. The points are `ascendant`, `midheaven`, `armc`, `vertex`, `equatorial_ascendant`, `co_ascendant_koch`, `co_ascendant_munkasey` and `polar_ascendant`. Every slug matches `^[a-z][a-z0-9_]*$` and is unique across the enum.
 
@@ -27,6 +45,7 @@ House::ASCENDANT->cuspNumber();  // null
 foreach ($frame->houses as $row) {
     $cusp = $row['house']->house()->cuspNumber(); // 1..12, or null for a point
 }
+
 
 ```
 ### Fixed
@@ -53,6 +72,7 @@ PlanetBody::TRUE_NODE->slug();  // 'true_node'
 Every slug matches ^[a-z][a-z0-9_]*$ and is unique across the enum. Case-name abbreviations are expanded rather than carried over — MEAN_APOG becomes mean_apogee and INTP_PERG becomes interpolated_perigee — because a slug is a permanent public contract and an abbreviation in one is a wart you cannot remove later.
 
 PlanetBody::fromName(string $name): ?self — the inverse of getName(), for callers that hold a label and need the case back. Returns null for a name belonging to no body, so an unknown label is something you can detect rather than something that silently becomes a wrong body.
+
 
 
 ```
@@ -109,6 +129,7 @@ Swisseph::setDateTime(...)->setLocation(...)->getSunEvents();
 // After (0.3.0)
 Swisseph::positions()->setLocation(...)->setDateTime(...)->get();
 Swisseph::risings()->setDateTime(...)->setLocation(...)->getSunEvents();
+
 
 
 
