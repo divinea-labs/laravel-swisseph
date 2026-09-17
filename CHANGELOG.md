@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-swisseph` will be documented in this file.
 
-## v0.3.5 — Planet descriptions are text again - 2026-09-17
+## v0.3.6 — Planet descriptions are text again - 2026-09-17
 
 `PlanetBody::getAdditionalInformation()` wrapped five descriptions (Harrington, Nibiru, Vulcan, Selena, Waldemath) in backticks. In PHP a backtick is not a string delimiter but the shell-execution operator, the same as `shell_exec()`. Calling the method didn't return the description: it tried to run the prose as a shell command (`This is another attempt to predict…`) and returned that command's output, which is `null`. So no description ever reached a caller. PHP 8.5 also warns about the operator, which is where the deprecation notice in consuming test suites came from.
 
